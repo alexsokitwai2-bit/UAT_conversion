@@ -1,0 +1,583 @@
+{
+  "name": "[UAT] Daily Sales Phone Online Email Scheduler",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "crm_task_mode",
+          "mode": "list",
+          "cachedResultName": "crm_task_mode"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "timestamp",
+              "value": "={{ $json.currentDateTime }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -368,
+        -400
+      ],
+      "id": "fea229a5-0df1-4281-9c00-117232366a90",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 獲取 GMT+8 時區的時間\nconst options = { timeZone: 'Asia/Hong_Kong', hour12: false };\nconst formatter = new Intl.DateTimeFormat('en-US', options);\n\n// 獲取 GMT+8 時間的各個組件\nconst localDate = new Date(now.toLocaleString(\"en-US\", { timeZone: \"Asia/Hong_Kong\" }));\n\nlocalDate.setHours(localDate.getHours());\n\n// 格式化為 yyyy-MM-dd hh:mm:ss\nconst year = localDate.getFullYear();\nconst month = String(localDate.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始\nconst day = String(localDate.getDate()).padStart(2, '0');\n//const hours = String(localDate.getHours()).padStart(2, '0');\n//const minutes = String(localDate.getMinutes()).padStart(2, '0');\n\nconst currentDateTime = `${year}-${month}-${day}`;\n\nreturn [{ json: { currentDateTime } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        -400
+      ],
+      "id": "c1496d54-bc76-4eaf-959a-896f7defd339",
+      "name": "Now()",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設輸入的 JSON 結構\nconst inputData = $('EIHL Sales Phone number List').first().json.data; // 獲取完整的 data 數組\n\n// 創建 API 請求的數組\nconst requests = inputData.map(item => ({\n  json: {\n    phone: item.phone, // 提取每個電話號碼\n    conversationId: item.conversationId // 也提取 conversationId\n  }\n}));\n\nreturn requests;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        32
+      ],
+      "id": "876e3416-5010-40a5-8da2-be1b3a6ebd14",
+      "name": "Breakdown each phone number"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n      \"phone\": [\"85298743343\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -144,
+        -400
+      ],
+      "id": "3a10daa4-7ed8-42a9-960b-a2ffdb5d2706",
+      "name": "EIHL Sales Phone number_debug",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            },
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -768,
+        -400
+      ],
+      "id": "848321ff-2d80-4d0b-89d2-de33df3610aa",
+      "name": "9am 1 day trigger1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        64
+      ],
+      "id": "bb25f047-ad2c-40a5-af8a-d255d6ce5827",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/getMessages/{{ $('Breakdown each phone number').item.json.phone }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMmZhNzM3NS1hM2U3LTRiMzEtYTQ4ZC1jYTBhYjNiMDM4OTYiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDgvMjEvMjAyNSAwNjo1OTowMCIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.jzazWbBTsV-aowCI7rIjNkbjh9l9bz7oM7Z7mrIk9DA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -544,
+        48
+      ],
+      "id": "5087a628-d562-4c82-a934-06611906e5c2",
+      "name": "GET Sales Chatroom latest msg time"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"data\": [\n    {\n        \"phone\": \"85296611570\",\n    \t\"conversationId\": \"6825a305132611918f7f73af\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1120,
+        80
+      ],
+      "id": "38ec3a7d-78c7-4f3d-a168-377c0928f5f9",
+      "name": "EIHL Sales Phone number List"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        688
+      ],
+      "id": "e7d2ed7f-3568-4432-9024-a328b8f0b506",
+      "name": "Aggregate1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/getMessages/85298704629",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMmZhNzM3NS1hM2U3LTRiMzEtYTQ4ZC1jYTBhYjNiMDM4OTYiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDgvMjEvMjAyNSAwNjo1OTowMCIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.jzazWbBTsV-aowCI7rIjNkbjh9l9bz7oM7Z7mrIk9DA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -992,
+        672
+      ],
+      "id": "83a7a250-9c43-47c8-9619-7c560f731545",
+      "name": "GET Sales Chatroom latest msg time debug",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input data is assumed to be in the items array\nconst inputData = $input.first().json.data;\n\n// 假设 phone 数据在另一个变量中\nconst phoneData = $('Breakdown each phone number').all();\nconst phoneNumbers = phoneData.map(item => item.json.phone);\n\nconst output = [];\nconst conversationMap = {}; // 用於跟踪每個 conversationId 的狀態\nlet phoneIndex = 0; // 用於跟踪電話索引\n\ninputData.forEach(entry => {\n  // Check if the messages object and items array exist\n  if (entry.messages && Array.isArray(entry.messages.items)) {\n    // Map over the items to extract the created field and current time\n    entry.messages.items.forEach(item => {\n      // 獲取當前的 conversationId\n      const conversationId = item.conversationId;\n\n      // 如果 operatorName 為 null 且尚未處理過該 conversationId\n      if (item.operatorName === null && !conversationMap[conversationId]) {\n        // 確保電話索引不超出範圍\n        if (phoneIndex < phoneNumbers.length) {\n          output.push({\n            created: item.created, // Extract the created field\n            currentTimeGMT: new Date().toISOString(), // Get the current time in GMT\n            conversationId: conversationId, // Add conversationId\n            phone: phoneNumbers[phoneIndex] // Add corresponding phone number\n          });\n          phoneIndex++; // Increment phone index\n        }\n        // 標記該 conversationId 已處理\n        conversationMap[conversationId] = true;\n      }\n    });\n  }\n});\n\n// Return the output\nreturn output.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        704
+      ],
+      "id": "7869608a-8d27-4e2c-80ca-37685c1a6ace",
+      "name": "Get Latest time bak",
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "johnathantsecl@emperorgroup.com,karmenwong@emperorgroup.com,andreali@emperorgroup.com,raysuen@emperorgroup.com",
+        "subject": "[EIHL-CRM-UAT] Sales Latest Online Email Report",
+        "html": "={{ $json.htmlTable }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        368
+      ],
+      "id": "7c967785-4f82-43bc-853f-92229615ad87",
+      "name": "Send email",
+      "webhookId": "b3f36b98-c921-4533-8e6a-dc35d41c7476",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 獲取所有輸入數據\nconst data = $input.all().map(item => item.json); // 獲取所有數據\n\n// 提取 contacts 和 onlineRecords\nconst contacts = data[0].contacts; // 獲取 contacts 數組\nconst onlineRecords = data[1].onlineRecords; // 獲取 onlineRecords 數組\n\n// 建立一個 phone 到 latest_created 的映射\nconst phoneMap = {};\nonlineRecords.forEach(record => {\n    const phone = record.phone;\n    const latest_created = record.latest_created;\n\n    // 將 phone 和 latest_created 存入映射\n    phoneMap[phone] = latest_created;\n});\n\n// 建立 HTML 表格\nlet html = `\n<style>\n    body {\n        font-family: Arial, sans-serif;\n        margin: 20px;\n        padding: 20px;\n        background-color: #f4f4f4;\n    }\n    table {\n        width: 100%;\n        border-collapse: collapse;\n        margin: 20px 0;\n        background-color: #fff;\n        border: 2px solid #000;\n    }\n    th, td {\n        border: 1px solid #000;\n        padding: 8px;\n        text-align: left;\n    }\n    th {\n        background-color: #007BFF;\n        color: white;\n    }\n    tr:hover {\n        background-color: #f1f1f1;\n    }\n</style>\n\n<table>\n    <thead>\n        <tr>\n            <th>CS Sales Phone</th>\n            <th>Full Name</th>\n            <th>Latest Online Time</th>\n        </tr>\n    </thead>\n    <tbody>`;\n\ncontacts.forEach(contact => {\n    const phone = contact.phone; // 從 contacts 中獲取 phone\n    const fullName = contact.fullName; // 從 contacts 中獲取 fullName\n    const latest_created = phoneMap[phone] || null; // 根據 phone 獲取 latest_created\n\n    // 將 UTC 日期轉換為 GMT+8\n    const formattedDate = latest_created \n        ? new Date(new Date(latest_created).getTime() + 8 * 60 * 60 * 1000) \n        : null;\n\n    // 格式化顯示日期\n    const displayDate = formattedDate \n        ? formattedDate.toLocaleString('en-US') \n        : 'N/A'; // 如果沒有 latest_created，顯示 N/A\n\n    html += `\n        <tr>\n            <td>${phone}</td>\n            <td>${fullName}</td>\n            <td>${displayDate}</td>\n        </tr>`;\n});\n\nhtml += `\n    </tbody>\n</table>`;\n\nreturn [{ json: { htmlTable: html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        368
+      ],
+      "id": "04f3dc49-05fc-44a3-9fc5-3c4ebcf1645b",
+      "name": "Construct email table"
+    },
+    {
+      "parameters": {
+        "content": "SALES phone list",
+        "height": 272,
+        "width": 216,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        0
+      ],
+      "id": "575f3f2e-8750-4465-a710-611e9b5d4f46",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 獲取輸入的數據\nconst inputData = $input.first().json.data; // 獲取 online 訊息的數據\nconst phoneData = $('EIHL Sales Phone number List').first().json.data;\nconst nameData = $('Name JSON').all(); // 確保這裡正確引用\n\n// 輸出 nameData 以進行調試\nconsole.log('Name Data:', JSON.stringify(nameData, null, 2)); // 調試輸出\n\n// 創建一個字典映射 conversationId 到 phone\nconst phoneMap = {};\nphoneData.forEach(item => {\n  if (item.phone && item.conversationId) {\n    phoneMap[item.conversationId] = item.phone; // 映射 conversationId 到 phone\n  }\n});\n\n// 輸出 phoneMap 以進行調試\nconsole.log('Phone Map:', phoneMap);\n\n// 創建一個字典映射 phone 到 fullName\nconst nameMap = {};\nnameData.forEach(item => {\n  if (item.contact_list && Array.isArray(item.contact_list)) {\n    item.contact_list.forEach(contact => {\n      if (contact.phone && contact.fullName) { // 確保 phone 和 fullName 都存在\n        const trimmedPhone = contact.phone.trim(); // 去除前後空格\n        nameMap[trimmedPhone] = contact.fullName; // 映射 phone 到 fullName\n      } else {\n        console.log(`Missing phone or fullName in contact:`, contact); // 檢查缺失的數據\n      }\n    });\n  } else {\n    console.log(`No contact_list found in item:`, item); // 檢查沒有聯繫人列表的項目\n  }\n});\n\n// 輸出 nameMap 以進行調試\nconsole.log('Name Map:', nameMap);\n\nconst onlineRecords = []; // 用於存儲每個 conversationId 的最近在線時間\n\n// 遍歷每一個 entry\ninputData.forEach(entry => {\n  let conversationId = null;\n  let latestOnlineTime = null; // 用於存儲最近的 created 時間\n\n  // 檢查 messages 對象和 items 陣列是否存在\n  if (entry.messages && Array.isArray(entry.messages.items)) {\n    // 遍歷所有 message items\n    for (const item of entry.messages.items) {\n      // 檢查 text 是否為 \"Online\"\n      if (item.text === \"Online\") {\n        // 更新最近的 created 時間\n        if (!latestOnlineTime || new Date(item.created) > new Date(latestOnlineTime)) {\n          latestOnlineTime = item.created; // 保持最近的 created 時間\n          conversationId = item.conversationId; // 取得對應的 conversationId\n        }\n      }\n    }\n  }\n\n  // 如果找到最新的在線時間，將其記錄下來\n  if (latestOnlineTime && conversationId) {\n    const phone = phoneMap[conversationId] || null; // 根據 conversationId 獲取對應的 phone\n    const trimmedPhone = phone ? phone.trim() : null; // 去除 phone 的前後空格\n    const fullName = trimmedPhone ? nameMap[trimmedPhone] || 'N/A' : 'N/A'; // 根據 phone 獲取對應的 fullName\n    \n    // 輸出調試信息\n    console.log(`Conversation ID: ${conversationId}, Phone: ${trimmedPhone}, Full Name: ${fullName}`);\n\n    onlineRecords.push({\n      conversationId: conversationId, // 保存 conversationId\n      latest_created: latestOnlineTime, // 保存最近的 created 時間\n      phone: trimmedPhone // 保存電話號碼\n      //fullName: fullName // 保存姓名\n    });\n  }\n});\n\n// 返回所有的在線記錄，包裝在一個物件中\nreturn [{ json: { onlineRecords } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        64
+      ],
+      "id": "fb7f9771-1fca-4139-afec-77d3332db748",
+      "name": "Get Sales Online Latest Time"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1440,
+        80
+      ],
+      "id": "356b1068-10ed-4284-9b68-a45f733cced3",
+      "name": "1 day trigger"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -160
+      ],
+      "id": "f013dad7-3343-4dbb-bd5f-70bdf9ab28ee",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "url": "https://live-mt-server.wati.io/431426/api/v1/getContacts",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "attribute",
+              "value": "=[{name: \"phone\", operator: \"==\", value: \"{{ $('Breakdown each phone number').item.json.phone }}\"}]"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -544,
+        -160
+      ],
+      "id": "da3956d3-f5d4-4178-ab90-012ccd1a50c4",
+      "name": "Name JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.data;\n// 用於存儲結果的數組\nconst contacts = [];\n\n// 遍歷所有的項目\ndata.forEach(item => {\n  if (item.contact_list && Array.isArray(item.contact_list)) {\n    item.contact_list.forEach(contact => {\n      if (contact.phone && contact.fullName) { // 確保 phone 和 fullName 存在\n        contacts.push({\n          phone: contact.phone,\n          fullName: contact.fullName\n        });\n      }\n    });\n  }\n});\n\nreturn {contacts};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -160
+      ],
+      "id": "05fa869e-10d9-4b16-8543-f8490bf7e30a",
+      "name": "Get Sales Name"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        176,
+        64
+      ],
+      "id": "5e69a28d-4712-4709-8fda-2712cd4802c8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"data\": [\n    {\n        \"phone\": \"85298743343\",\n    \t\"conversationId\": \"682ea6df61a576b45a461dc1\"\n    },\n    {\n        \"phone\": \"85296611570\",\n    \t\"conversationId\": \"6825a305132611918f7f73af\"\n    },\n    {\n        \"phone\": \"85298704629\",\n    \t\"conversationId\": \"6846ad50f04cef4d3a9f123a\"\n    },\n    {\n        \"phone\": \"85292269166\",\n    \t\"conversationId\": \"6825a877e716c43f4e22604e\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1120,
+        -192
+      ],
+      "id": "be993b62-7793-4898-9e65-a95a80a9b9f9",
+      "name": "EIHL Sales Phone number List bak",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Select rows from a table": {
+      "main": [
+        []
+      ]
+    },
+    "Now()": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Breakdown each phone number": {
+      "main": [
+        [
+          {
+            "node": "Name JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Sales Chatroom latest msg time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIHL Sales Phone number_debug": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Get Sales Online Latest Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Sales Chatroom latest msg time": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIHL Sales Phone number List": {
+      "main": [
+        [
+          {
+            "node": "Breakdown each phone number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        []
+      ]
+    },
+    "GET Sales Chatroom latest msg time debug": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct email table": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sales Online Latest Time": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "1 day trigger": {
+      "main": [
+        [
+          {
+            "node": "EIHL Sales Phone number List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Get Sales Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Name JSON": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sales Name": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Construct email table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "640dd5dc-dca5-4286-970b-0455cdfe8ccb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "eGXJQORlqQzzcIq3",
+  "tags": []
+}

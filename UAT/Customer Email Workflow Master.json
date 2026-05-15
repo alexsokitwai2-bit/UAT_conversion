@@ -1,0 +1,1416 @@
+{
+  "name": "Customer Email Workflow Master",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -432
+      ],
+      "id": "0ce573a2-214b-4f9d-b71c-7e2e39e9ac3e",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Date_of_Birth",
+            "Full_Name",
+            "Email",
+            "field3",
+            "Mobile",
+            "Talke_Lang"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -80
+      ],
+      "id": "09408b90-7cc1-444a-a360-6ac0871644ac",
+      "name": "Get many contacts",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        -80
+      ],
+      "id": "670b99b8-c69d-4c35-a31a-289ad686872b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.data; // 假設您的資料已經在這裡\n\n// 獲取今天的 MM-DD\nconst today = new Date();\nconst todayMonth = String(today.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始，所以 +1\nconst todayDay = String(today.getDate()).padStart(2, '0');\nconst todayMMDD = `${todayMonth}-${todayDay}`; // 例如 \"10-31\"\n\nconsole.log(`今天日期 (MM-DD): ${todayMMDD}`);\n\n// 過濾出今天生日的紀錄\nconst birthdayToday = data.filter(record => {\n    return record.Birth_Month_Day === todayMMDD;\n});\n\n// 返回結果\nif (birthdayToday.length > 0) {\n    return birthdayToday.map(record => ({ json: record }));\n} else {\n    // 如果沒有今天生日的，返回空陣列或訊息\n    return null;\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -624
+      ],
+      "id": "a8163934-5359-459a-9569-5f40c202607d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -624
+      ],
+      "id": "e97246ac-93a2-4bb6-a6b0-ee27eeef0f13",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "={{ $('Code').item.json.Email }}",
+        "subject": "=[EIHL-CRM-UAT] Happy Birthday, {{ $('Code').item.json.Full_Name }}!",
+        "html": "={{ $('Construct email content').item.json.email_content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        736,
+        -736
+      ],
+      "id": "653ed329-e02a-4968-8ec0-1c3e431969b8",
+      "name": "Send HBD email",
+      "webhookId": "7dd2dc2c-d225-4647-a15c-805fe7fc2ec3",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_setting_token",
+          "mode": "list",
+          "cachedResultName": "zoho_setting_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        64,
+        -640
+      ],
+      "id": "b0f6e9d3-8286-4faf-a600-b05bc5cb0878",
+      "name": "Zoho Token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Happy Birthday",
+        "height": 668,
+        "width": 1464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -880
+      ],
+      "id": "d21fe101-6726-4784-a301-c2f40221576b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json; // Access the first input object\nconst data = inputData.data; // Get the nested data array\nconst currentTimeGMT = new Date().toISOString();\n\nconst filteredHBD = data.filter(item => {\n    // Check if Date_of_Birth exists and is not null/empty\n    if (item.Date_of_Birth && item.Date_of_Birth.trim() !== '') {\n        // Extract MM-DD using regex: match YYYY-MM-DD\n        const match = item.Date_of_Birth.match(/(\\d{4})-(\\d{2})-(\\d{2})/);\n        if (match) {\n            const monthDay = `${match[2]}-${match[3]}`; // \"01-01\"\n            // Add the extracted MM-DD to the item\n            item.Birth_Month_Day = monthDay;\n            return true; // Include this item\n        }\n    }\n    return false; // Skip invalid items\n});\n\n// Return with the enhanced data\nreturn filteredHBD.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        -624
+      ],
+      "id": "8b5b3c74-5364-42ce-8f23-3d57a423fe2e",
+      "name": "Get Birthday"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "efc7e883-57df-4299-a7cb-042a9da2a86e",
+              "leftValue": "={{ $json.Full_Name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        -624
+      ],
+      "id": "82e62feb-4071-4619-a039-9215d7a14446",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "Membership Expiry Notice",
+        "height": 892,
+        "width": 2088,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -144
+      ],
+      "id": "ce5cddbe-e3c5-4012-9e32-22ca57e385a8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Festival",
+        "height": 444,
+        "width": 984,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        800
+      ],
+      "id": "c176c1e2-412d-4b3a-a496-430ec26f1e7a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\":\n  [\n    {\n      \"festival_name\": \"Christmas\",\n      \"festival_date\": \"2025-12-25\"\n    },\n    {\n      \"festival_name\": \"Boxing Day\",\n      \"festival_date\": \"2025-12-26\"\n    },\n    {\n      \"festival_name\": \"New Years Eve\",\n      \"festival_date\": \"2026-01-01\"\n    },\n    {\n      \"festival_name\": \"Lunar New Year\",\n      \"festival_date\": \"2026-02-17\"\n    },\n    {\n      \"festival_name\": \"Easter\",\n      \"festival_date\": \"2026-04-08\"\n    },\n    {\n      \"festival_name\": \"Buddha Birthday\",\n      \"festival_date\": \"2026-05-25\"\n    },\n    {\n      \"festival_name\": \"Dragon Boat Festival\",\n      \"festival_date\": \"2026-06-19\"\n    },\n    {\n      \"festival_name\": \"Hong Kong Special Administrative Region Establishment Day\",\n      \"festival_date\": \"2026-07-01\"\n    },\n    {\n      \"festival_name\": \"Mid-Autumn Festival\",\n      \"festival_date\": \"2026-09-26\"\n    },\n    {\n      \"festival_name\": \"National Day\",\n      \"festival_date\": \"2026-10-01\"\n    },\n    {\n      \"festival_name\": \"Christmas\",\n      \"festival_date\": \"2025-12-25\"\n    },\n    {\n      \"festival_name\": \"Boxing Day\",\n      \"festival_date\": \"2025-12-26\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        832
+      ],
+      "id": "a96b98b6-1532-43d2-966f-69a6b1b5b0e1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        832
+      ],
+      "id": "90e301f3-60ad-4ab3-9746-fb47110610b6",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json; // 獲取第一個輸入對象\nconst data = inputData.data[0].data; // 獲取嵌套的資料陣列\nconst currentDate = new Date(); // 獲取當前日期\ncurrentDate.setHours(0, 0, 0, 0); // 清除時間部分，僅保留日期\n\nconst filteredFestivals = data.filter(item => {\n    // 將節日日期轉換為 Date 對象\n    const festivalDate = new Date(item.festival_date);\n    festivalDate.setHours(0, 0, 0, 0); // 清除時間部分，僅保留日期\n\n    // 檢查是否等於今天的日期\n    return festivalDate.getTime() === currentDate.getTime();\n});\n\n// 返回符合條件的紀錄\nreturn filteredFestivals.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        832
+      ],
+      "id": "6691b233-7c82-4ef4-b2c0-d8ab4846ef46",
+      "name": "Get Today is festival or not"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $('Aggregate').first().json.data; // 获取第一个输入对象\nconst data = inputData; // 获取资料数组\n\n// 使用 filter 和 map 提取所有 Email，并返回单个 item 的输出形式\nconst emailList = data\n    .filter(item => item.Email) // 过滤掉没有 Email 的项目\n    .map(item => ({ json: { email: item.Email } })); // 返回每个 Email 作为单独的 item\n\nreturn emailList; // 返回结果"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        832
+      ],
+      "id": "58f531b1-e6ca-4d2d-9994-e081d6391a50",
+      "name": "Construct email recipients"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1296,
+        -80
+      ],
+      "id": "24b2e7a0-df3a-4f8e-b576-4467ed282d19",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "ALERT: US Time Zone",
+        "height": 208,
+        "width": 184,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        -128
+      ],
+      "id": "6f3ba458-8e06-4441-8242-0191a7596c58",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json; // 获取第一个输入对象\nconst data = inputData.data; // 获取嵌套的数据数组\nconst currentDate = new Date(); // 获取当前日期\ncurrentDate.setHours(0, 0, 0, 0); // 清除时间部分，仅保留日期\n\nconsole.log(\"当前日期:\", currentDate);\n\nconst filteredRecords = data.filter(item => {\n    // 检查 field3 是否存在且不为 null 或空\n    if (item.field3 && item.field3.trim() !== '') {\n        const field3Date = new Date(item.field3); // 将 field3 转换为日期对象\n\n        // 检查 field3 是否为有效日期\n        if (!isNaN(field3Date)) {\n            console.log(\"字段3日期:\", field3Date);\n\n            // 计算当前月份和 field3 的月份差\n            const monthDifference = (field3Date.getFullYear() - currentDate.getFullYear()) * 12 + \n                                    (field3Date.getMonth() - currentDate.getMonth());\n\n            console.log(\"月份差:\", monthDifference);\n\n            // 检查是否为一个月后\n            if (monthDifference === 1 && field3Date.getDate() === currentDate.getDate()) {\n                console.log(\"找到符合条件的记录:\", item.Full_Name);\n                return true; // 包含该项\n            }\n        } else {\n            console.warn(`无效日期格式: ${item.field3}`); // 日志警告\n        }\n    } else {\n        console.warn(`field3 为空或为 null: ${item.Full_Name}`); // 日志警告\n    }\n    return false; // 跳过无效项\n});\n\n// 返回符合条件的记录\nreturn filteredRecords.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -80
+      ],
+      "id": "3e8b9c30-f552-41f8-a804-76002e85df8e",
+      "name": "Get Membership Expiry Date (1 Month)",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cb91d18-fb51-4d1b-8515-c224593237c8",
+              "name": "=email_content",
+              "value": "={{ $('Get HBD email template').item.json.email_templates[0].content.replace(/\\$\\{\\!Contacts\\.Full_Name\\}/g, $('Code').item.json.Full_Name) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -848
+      ],
+      "id": "e1581d6c-ab5b-4b20-8d19-2e6bc953d943",
+      "name": "Construct email content"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/settings/email_templates/6638789000004030005",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -832
+      ],
+      "id": "15ec7991-7bf6-460b-8675-7501770211bf",
+      "name": "Get HBD email template"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cb91d18-fb51-4d1b-8515-c224593237c8",
+              "name": "=email_content",
+              "value": "={{ $('Get HBD email gift template').item.json.email_templates[0].content.replace(/\\$\\{\\!Contacts\\.Full_Name\\}/g, $('Code').item.json.Full_Name) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -512
+      ],
+      "id": "382a6747-6edb-46b4-a3e1-5e055ee6718c",
+      "name": "Construct email content1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/settings/email_templates/6638789000004030027",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        -384
+      ],
+      "id": "dbe67692-552c-41ff-978b-fe46d2388a2e",
+      "name": "Get HBD email gift template"
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "={{ $('Code').item.json.Email }}",
+        "subject": "=[EIHL-CRM-UAT] Happy Birthday, {{ $('Code').item.json.Full_Name }}!",
+        "html": "={{ $('Construct email content1').item.json.email_content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        736,
+        -384
+      ],
+      "id": "8e5cbee9-b978-4e42-a0f4-cd2fc11df82d",
+      "name": "Send HBD gift email",
+      "webhookId": "7dd2dc2c-d225-4647-a15c-805fe7fc2ec3",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        384,
+        -704
+      ],
+      "id": "dc6ed223-671c-4b7f-b80e-e7f8ea984b7e",
+      "name": "Loop batch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        400,
+        -384
+      ],
+      "id": "6003db62-5d43-46e8-8f15-a40eeb865b82",
+      "name": "Loop batch 2"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_setting_token",
+          "mode": "list",
+          "cachedResultName": "zoho_setting_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -352,
+        -80
+      ],
+      "id": "668da284-1dd6-4dcc-80bf-3c25ee5d0dae",
+      "name": "Zoho Token1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "={{ $('Get Membership Expiry Date (1 Month)').item.json.Email }}",
+        "subject": "=[EIHL-CRM-UAT] Your Emperor Properties membership expires soon!",
+        "html": "={{ $('Construct ENG expiry email content').item.json.email_content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        512,
+        400
+      ],
+      "id": "2da7badb-9088-4a71-939a-89a8f88c666f",
+      "name": "Send Expiry Email",
+      "webhookId": "7dd2dc2c-d225-4647-a15c-805fe7fc2ec3",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Get Membership Expiry Date (1 Month)').item.json.Talke_Lang }}",
+                    "rightValue": "Chi",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    },
+                    "id": "43a8ebb7-e57d-4f46-8871-e50bf439c3f5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Chi"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dbb69ade-ac62-4c9d-9fc3-6f50b4117bb6",
+                    "leftValue": "={{ $('Get Membership Expiry Date (1 Month)').item.json.Talke_Lang }}",
+                    "rightValue": "Eng",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Eng"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "9b9054f9-25f4-48b5-9789-44b18eef7194",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/settings/email_templates/6638789000004055001",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token1').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        400
+      ],
+      "id": "149722d3-521e-45ee-971b-b28a4825b72c",
+      "name": "Get ENG expiry email template"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/settings/email_templates/6638789000004072053",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token1').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        -96
+      ],
+      "id": "5c91e003-8890-4b89-aa49-67b616fb5077",
+      "name": "Get CHI expiry email template1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cb91d18-fb51-4d1b-8515-c224593237c8",
+              "name": "=email_content",
+              "value": "={{ $('Get CHI expiry email template1').item.json.email_templates[0].content.replace(/\\$\\{\\!Contacts\\.Full_Name\\}/g, $('Get Membership Expiry Date (1 Month)').item.json.Full_Name).replace(/\\$\\{\\!Contacts\\.field3\\}/g, $('Get Membership Expiry Date (1 Month)').item.json.field3) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "4807243c-c7fd-455f-8720-05b0db4627af",
+      "name": "Construct CHI expiry email content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cb91d18-fb51-4d1b-8515-c224593237c8",
+              "name": "=email_content",
+              "value": "={{ $('Get ENG expiry email template').item.json.email_templates[0].content.replace(/\\$\\{\\!Contacts\\.Full_Name\\}/g, $('Get Membership Expiry Date (1 Month)').item.json.Full_Name).replace(/\\$\\{\\!Contacts\\.field3\\}/g, $('Get Membership Expiry Date (1 Month)').item.json.field3) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        400
+      ],
+      "id": "094ec046-5b1c-4bf3-bb55-5f58aa244fd9",
+      "name": "Construct ENG expiry email content"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        -80
+      ],
+      "id": "e083ebaa-5c2d-492b-b8dc-7c7d4fe8c590",
+      "name": "Loop Match Record Set"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "93dc95e9-c685-4516-bb01-04efaef2651d",
+              "leftValue": "={{ $('Get Membership Expiry Date (1 Month)').item.json.Email }}",
+              "rightValue": "dummy",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "49e2b13c-7e2e-45cb-930b-45657670b444",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendTemplateMessage?whatsappNumber={{ $('Get Membership Expiry Date (1 Month)').item.json.Mobile }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_name\": \"membership_expiry_notice_v2\",\n  \"broadcast_name\": \"Membership Expiry notice\",\n  \"parameters\": [\n    {\n      \"Name\": \"name\",\n      \"Value\": \"{{ $('Get Membership Expiry Date (1 Month)').item.json.Full_Name }}\"\n    },\n    {\n      \"Name\": \"expiry_date\",\n      \"Value\": \"{{ $('Get Membership Expiry Date (1 Month)').item.json.field3 }}\"\n    }\n  ],\n  \"channel_number\": \"85290556233\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        160
+      ],
+      "id": "fd885ba0-3b62-46e1-89ca-196133b5fb96",
+      "name": "Send expiry message by whatsapp",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1104,
+        -80
+      ],
+      "id": "69d05a2c-b1fc-4fbf-8c63-dc8c936a4f0a",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        1040
+      ],
+      "id": "430ba721-8943-427b-98a2-5937b7a38899",
+      "name": "Loop Match Record Set1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_setting_token",
+          "mode": "list",
+          "cachedResultName": "zoho_setting_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        832
+      ],
+      "id": "de61624e-6552-4113-8893-09aa93e5faf8",
+      "name": "Zoho Token2",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "={{ $('Construct email recipients').item.json.email }}",
+        "subject": "=[EIHL-CRM-UAT] {{ $('Get Festival email template').item.json.email_templates[0].subject }}",
+        "html": "={{ $('Get Festival email template').item.json.email_templates[0].content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        1056
+      ],
+      "id": "fc4c4d43-92da-4715-ba39-6c0debdae3f2",
+      "name": "Send Festival Email",
+      "webhookId": "7dd2dc2c-d225-4647-a15c-805fe7fc2ec3",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/settings/email_templates/6638789000004688001",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token2').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        1040
+      ],
+      "id": "8ec0619c-c608-4c35-8ace-e572b906dd3f",
+      "name": "Get Festival email template"
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "={{ $('Get Membership Expiry Date (1 Month)').item.json.Email }}",
+        "subject": "=[EIHL-CRM-UAT] Your Emperor Properties membership expires soon!",
+        "html": "={{ $('Construct CHI expiry email content').item.json.email_content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        -96
+      ],
+      "id": "8e0eefc3-2cb5-4dd6-b396-ffc8431f90d2",
+      "name": "Send Expiry Email1",
+      "webhookId": "7dd2dc2c-d225-4647-a15c-805fe7fc2ec3",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Get Birthday",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Membership Expiry Date (1 Month)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many contacts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send HBD email": {
+      "main": [
+        [
+          {
+            "node": "Loop batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Token": {
+      "main": [
+        [
+          {
+            "node": "Get HBD email template",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get HBD email gift template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Birthday": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Zoho Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Get Today is festival or not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today is festival or not": {
+      "main": [
+        [
+          {
+            "node": "Zoho Token2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct email recipients": {
+      "main": [
+        [
+          {
+            "node": "Get Festival email template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Membership Expiry Date (1 Month)": {
+      "main": [
+        [
+          {
+            "node": "Zoho Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct email content": {
+      "main": [
+        [
+          {
+            "node": "Send HBD email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get HBD email template": {
+      "main": [
+        [
+          {
+            "node": "Loop batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct email content1": {
+      "main": [
+        [
+          {
+            "node": "Send HBD gift email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get HBD email gift template": {
+      "main": [
+        [
+          {
+            "node": "Loop batch 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send HBD gift email": {
+      "main": [
+        [
+          {
+            "node": "Loop batch 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop batch": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Construct email content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop batch 2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Construct email content1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Token1": {
+      "main": [
+        [
+          {
+            "node": "Loop Match Record Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Expiry Email": {
+      "main": [
+        [
+          {
+            "node": "Loop Match Record Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get CHI expiry email template1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get ENG expiry email template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ENG expiry email template": {
+      "main": [
+        [
+          {
+            "node": "Construct ENG expiry email content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get CHI expiry email template1": {
+      "main": [
+        [
+          {
+            "node": "Construct CHI expiry email content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct CHI expiry email content": {
+      "main": [
+        [
+          {
+            "node": "Send Expiry Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct ENG expiry email content": {
+      "main": [
+        [
+          {
+            "node": "Send Expiry Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Match Record Set": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send expiry message by whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Token2": {
+      "main": [
+        [
+          {
+            "node": "Construct email recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Match Record Set1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Festival Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Festival email template": {
+      "main": [
+        [
+          {
+            "node": "Loop Match Record Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Festival Email": {
+      "main": [
+        [
+          {
+            "node": "Loop Match Record Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Expiry Email1": {
+      "main": [
+        [
+          {
+            "node": "Loop Match Record Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "753bf478-f64b-4c51-9e40-874bde1bbcb7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "uNLbQ6LOpUgToOPr",
+  "tags": []
+}

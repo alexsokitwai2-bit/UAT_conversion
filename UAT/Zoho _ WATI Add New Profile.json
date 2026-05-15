@@ -1,0 +1,461 @@
+{
+  "name": "Zoho > WATI Add New Profile",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        192
+      ],
+      "id": "1fa3ea4f-e404-47e5-82e3-4da78d42da33",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.wati_api_domain }}/api/v1/addContact/{{ $('Standard Input').item.json.mobile }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json-patch+json",
+        "body": "={\n  \"name\": \"{{ $('Standard Input').item.json.name ?? 'N/A' }}\",\n  \"customParams\": [\n    \n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        32
+      ],
+      "id": "91009da2-c9f8-472b-9432-6e5586494f24",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "data-add",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        0
+      ],
+      "id": "b8c5749f-bfca-4ca1-8e6d-81befc14ffd1",
+      "name": "Webhook",
+      "webhookId": "c95b88ac-3c47-4076-a2b3-5f7331fa08ad"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        112,
+        320
+      ],
+      "id": "89ad8424-f591-497b-8468-3ff39deff7d0",
+      "name": "Loop Over Items",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4ada6389-74cc-4ca1-94ba-0f595cb33445",
+              "leftValue": "={{ $('Standard Input').item.json.mobile }}",
+              "rightValue": "852",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "4373a017-e89b-4283-a4e9-0783a397197c",
+              "leftValue": "={{ $json.contact_list }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        48
+      ],
+      "id": "e5d75787-2dc0-4890-9b5e-87608f0a0e50",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "hordcoded env, need switch!!",
+        "height": 220,
+        "width": 228,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "12eb9cfe-c1d7-4e2e-8cfe-46ec3ee30dde",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Member_Tier2",
+            "Purchased_Properties",
+            "Purchased_Date",
+            "Membership_Number",
+            "field1",
+            "field3",
+            "Mobile",
+            "Last_Name",
+            "Email",
+            "First_Name",
+            "Date_of_Birth",
+            "Property_Amount",
+            "WATI_Sync_Timestamp"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        320
+      ],
+      "id": "1f4e5ce1-c146-472a-9749-4ad750050dfe",
+      "name": "Extract CRM Data",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "need think how to deal with add contacts by csv upload",
+        "height": 220,
+        "width": 228,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -64
+      ],
+      "id": "70fb57ba-e096-40f3-8fdd-74355f03de19",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -368,
+        48
+      ],
+      "id": "9f0746b2-8641-49d0-bfaa-dbafb02b716b",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        48
+      ],
+      "id": "61bc3648-5c88-46b6-b5b5-b438cf171884",
+      "name": "Standard Input"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n\"body\": \n  {\n    \"mobile\": \"85260335569\",\n    \"name\": \"Johnathan Tse\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -672,
+        192
+      ],
+      "id": "18d835d4-8fb8-462e-a1ee-001b49c79598",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.wati_api_domain }}/api/v1/getContacts",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "attribute",
+              "value": "=[{name: \"phone\", operator: \"==\", value: \"{{ $('Standard Input').item.json.mobile }}\"}]"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        48
+      ],
+      "id": "a08aeb3b-8653-4a42-9984-eb3f6409c259",
+      "name": "Search WATI Contact exists"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "szs8B3QxMk3m469Z",
+          "mode": "list",
+          "cachedResultName": "Zoho > WATI Data Sync copy"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        32
+      ],
+      "id": "a746494b-89c2-4f92-987f-affe4b0d326a",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\"body\": \n  {\n    \"mobile\":\"{{ $('Standard Input').item.json.mobile }}\",\n    \"name\":\"{{ $('Standard Input').item.json.name }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        32
+      ],
+      "id": "8f55122d-2aae-4fb1-b117-12d582971a17",
+      "name": "Set Parm"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Set Parm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Extract CRM Data": {
+      "main": [
+        []
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Search WATI Contact exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search WATI Contact exists": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Parm": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "60ffb17b-2e84-47bf-9f91-f1467e7d0751",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "xPRg4xbOCF915JCG",
+  "tags": []
+}

@@ -1,0 +1,426 @@
+{
+  "name": "OSS Bucket POC",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -208
+      ],
+      "id": "a5832620-a671-4566-ae52-e7c8a109fafa",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "bucketName": "eihl-crm-storage",
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -192
+      ],
+      "id": "75edf249-ce5e-42ff-a6cf-2e664db10182",
+      "name": "Get file",
+      "credentials": {
+        "s3": {
+          "id": "uzMQcw93nGCOhEZE",
+          "name": "AliYun OSS credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -816,
+        80
+      ],
+      "id": "e25f1897-4f03-4bd3-a065-afbf55e84011",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "sourcePath": "={{ $json.storage_data }}",
+        "destinationPath": "=/eihl-crm-storage/{{ $json.mobile_num }}_{{ $json.name }}/{{ $json.storage_data }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -192
+      ],
+      "id": "38594d44-2a91-4aae-b618-8085d4a97023",
+      "name": "Copy a file",
+      "credentials": {
+        "s3": {
+          "id": "uzMQcw93nGCOhEZE",
+          "name": "AliYun OSS credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "eihl-crm-storage",
+        "fileName": "={{$('Input').item.json.mobile_num}}_{{$('Input').item.json.name}}/{{ $('Input').item.json.storage_data.split('/').pop() }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "3dc6e9b9-664a-4dda-88db-594e26250552",
+      "name": "Upload a file",
+      "credentials": {
+        "s3": {
+          "id": "uzMQcw93nGCOhEZE",
+          "name": "AliYun OSS credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        80
+      ],
+      "id": "153359c3-aee0-4616-9645-1965549d3696",
+      "name": "Input"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -448,
+        80
+      ],
+      "id": "088e7d49-ee19-41f1-a2cb-50701c9ba82f",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Input').item.json.storage_data }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        80
+      ],
+      "id": "748447af-cfc6-46db-8556-e1622db3669f",
+      "name": "Get WATI image"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "name"
+        },
+        "table": {
+          "__rl": true,
+          "value": "whatsapp_messages",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mobile_num",
+              "displayName": "mobile_num",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conversationId",
+              "displayName": "conversationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "from",
+              "displayName": "from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "operatorName",
+              "displayName": "operatorName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        336,
+        80
+      ],
+      "id": "c7b44415-108a-40c7-aa9c-44ba1568109f",
+      "name": "Insert Message to PSQL",
+      "credentials": {
+        "postgres": {
+          "id": "d8WzG2fbrDJOiMua",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"message\":{{ JSON.stringify($('Input').item.json.storage_data) ?? null}},\n  \"name\":{{ JSON.stringify($('Input').item.json.name) ?? null}},\n  \"mobile_num\": {{ JSON.stringify($('Input').item.json.mobile_num) ?? null}},\n  \"timestamp\": \"{{ $('Input').item.json.timestamp }}\",\n  \"from\":\"{{ $('Input').item.json.from }}\",\n  \"to\": \"{{ $('Input').item.json.to }}\",\n  \"conversationId\":\"{{ $('Input').item.json.conversationId }}\",\n  \"type\":\"user_message\",\n  \"source\":\"{{ $('Input').item.json.source }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        80
+      ],
+      "id": "6e14879c-0d65-4e2d-b396-f5a9b68c296b",
+      "name": "Set Parm"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get file": {
+      "main": [
+        [
+          {
+            "node": "Copy a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Set Parm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get WATI image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get WATI image": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Parm": {
+      "main": [
+        [
+          {
+            "node": "Insert Message to PSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "a38cc19b-351a-464d-8156-44b296a39cdc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "eAJFaqufxysaclku",
+  "tags": []
+}

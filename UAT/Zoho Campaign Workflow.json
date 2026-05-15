@@ -1,0 +1,1264 @@
+{
+  "name": "Zoho Campaign Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const noteContent = $input.first().json.remark_text_to_Zoho;\n\n// 处理换行符\nconst formattedNoteContent = noteContent.replace(/\\s+/g, ' ').trim();\n\n// 构建请求体\nconst requestBody = {\n    data: [\n        {\n            Note_Title: \"x\",\n            Note_Content: formattedNoteContent, // 使用处理后的内容\n            Parent_Id: \"1\",\n            se_module: \"Contacts\"\n        }\n    ]\n};\n\nreturn requestBody;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        192
+      ],
+      "id": "8c3c38d1-2be7-4acf-8df8-89e84b2ca206",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/contacts/{{ $('get zoho profile data (obs)').item.json.id }}/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n       {\n            \"Note_Title\": \"{{ $('Get campaign by ID').item.json.data[0].Campaign_Name }}\",\n            \"Note_Content\": \"{{ $('Standardize Input').item.json.remark_text_to_Zoho }}\",\n            \"Parent_Id\": \"{{ $('get zoho profile data (obs)').item.json.id }}\",\n            \"se_module\": \"Contacts\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        352
+      ],
+      "id": "9734ad77-1dd7-443f-b6e1-8036721d575d",
+      "name": "Add ans in Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/contacts/{{ $('get zoho profile data').item.json.contact_id }}/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n       {\n            \"Note_Title\": \"{{ $('Get campaign by ID').item.json.data[0].Campaign_Name }}\",\n            \"Note_Content\": \"{{JSON.stringify($('Standardize Input').item.json.campaign_note).slice(1, -1) }}\",\n            \"Parent_Id\": \"{{ $('get zoho profile data').item.json.contact_id }}\",\n            \"se_module\": \"Contacts\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        192
+      ],
+      "id": "f500c255-718f-4332-be3e-98df8544a86f",
+      "name": "Add bot msg in Note"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Campaigns/{{ $('Get campaign by ID').item.json.data[0].id }}/Contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n        {\n            \"id\": \"{{ $('get zoho profile data').item.json.contact_id }}\",\n            \"Member_Status\": \"{{ $json.decision }}\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        368
+      ],
+      "id": "e88fb85c-1d48-4fda-81bf-c291b1db67f4",
+      "name": "POST status to Zoho campaign"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c77c947e-aa5b-4f4e-be9a-862c3d1e3e3e",
+              "name": "remark_text_to_Zoho",
+              "value": "=Bot: For {{  $('Standardize Input').item.json.campaign_name  }}, customer reply as: {{ $('Webhook').item.json.body.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        352
+      ],
+      "id": "ad908e1a-ad94-4a2a-9b0c-0b1a9926d923",
+      "name": "Construct Notes",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c77c947e-aa5b-4f4e-be9a-862c3d1e3e3e",
+              "name": "remark_text_to_Zoho",
+              "value": "={{ $('Standardize Input').item.json.remark_text_to_Zoho }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        192
+      ],
+      "id": "7ab2aaca-10be-4e6e-b669-3192e4dac43b",
+      "name": "Construct Notes1"
+    },
+    {
+      "parameters": {
+        "content": "Call Zoho APIs",
+        "height": 788,
+        "width": 1316
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        112
+      ],
+      "id": "5d71359b-b25a-4dcd-9176-25aa07197818",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Campaigns/{{ $('Standardize Input').item.json.campaign_id }}/Contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n        {\n            \"id\": \"{{ $('get zoho profile data').item.json.contact_id }}\",\n            \"Member_Status\": \"Invited\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        560
+      ],
+      "id": "0fa85819-c223-461f-826f-311420cff691",
+      "name": "Create invited status in campaign"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "195bb26c-24f3-4e78-a956-d4954beb96a5",
+              "name": "decision",
+              "value": "Attend",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        304
+      ],
+      "id": "c60bb4d6-22bf-4e00-bc3d-70ae78bc81af",
+      "name": "Attend"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ce1a6b95-736a-4367-951d-381248938dc8",
+              "name": "decision",
+              "value": "Rejected",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        512
+      ],
+      "id": "ffb58c05-e969-4772-a4bc-10662e13ccc0",
+      "name": "Reject"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e5227053-39b7-448a-8c51-ab073b0ffd66",
+              "name": "campaign_name",
+              "value": "={{ $('Webhook').item.json.body.text.substring(0, $('Webhook').item.json.body.text.indexOf(\" -\")) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        352
+      ],
+      "id": "64838389-d1a6-4ee4-a67c-351ebf404704",
+      "name": "get campaign name",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    {\n      \"Note_Title\": \" Customer {{ $('get zoho profile data').item.json.name }} - Notes\",\n      \"Note_Content\": \"{{JSON.stringify($('Standardize Input').item.json.campaign_note).slice(1, -1) }}\",\n      \"Parent_Id\": \"{{ $('Standardize Input').item.json.campaign_id }}\",\n      \"se_module\": \"Campaigns\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        192
+      ],
+      "id": "f1c41903-8ec7-4d9f-8836-03bf1baa9f81",
+      "name": "Add Campaign Note"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Standardize Input').item.json.buttonReply }}",
+                    "rightValue": "RSVP 確認出席",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "18dee713-849d-4f9a-9128-bd719730c177"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Attend"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b4b1f824-5542-45f1-b6dd-a8d3a1faf813",
+                    "leftValue": "={{ $('Standardize Input').item.json.buttonReply }}",
+                    "rightValue": "Unable to attend 無法出席",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Reject"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        336,
+        352
+      ],
+      "id": "1c2c3faf-be4e-4f42-bbad-2e7d89e47a98",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "={{ $('Construct attribute list').item.json.email.value }}",
+        "subject": "={{ $('Hardcode field').item.json.campaign_name }} - Attend Confirmation",
+        "html": "=Thank you for joining {{ $('Hardcode field').item.json.campaign_name }}!! \n<br><br>\nThis is the confirmation letter on the event.\n<br><br>\nFormat TBC...",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        304
+      ],
+      "id": "20efed0c-2a72-4365-b0da-c7fb1c24cc04",
+      "name": "Send email",
+      "webhookId": "b1266aed-50df-4b62-8e6a-a5f67eb0a3b8",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1552,
+        400
+      ],
+      "id": "c0ceeeb4-aa7b-4938-a959-7c2c15ee798e",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "campaign-flow",
+        "authentication": "basicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1552,
+        224
+      ],
+      "id": "5f9f7a77-89ff-4288-af1b-96c17d9d8ca6",
+      "name": "Webhook",
+      "webhookId": "c9229f6a-b872-4d31-8a5a-e920c59622f9",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mYWitmcMYsHEobEy",
+          "name": "Portal Incoming Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -976,
+        304
+      ],
+      "id": "0cbc17ef-a194-4ba0-a9fa-6dc7958d80a3",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -784,
+        304
+      ],
+      "id": "292e34fb-fdae-40b9-93e0-2cc196ef3346",
+      "name": "Get Zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Standardize Input').item.json.action }}",
+                    "rightValue": "note",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d8f19512-2216-482b-9c0b-145fd9a6ed10"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Add Note"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "10b2bd89-725c-4783-89fc-f57b2c4c4901",
+                    "leftValue": "={{ $('Standardize Input').item.json.action }}",
+                    "rightValue": "decision",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Customer Decision"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "703cc57e-7f3c-47e8-95e6-1c6e3241d51e",
+                    "leftValue": "={{ $('Standardize Input').item.json.action }}",
+                    "rightValue": "invite",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Invite Campaign"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7566643e-fb67-44ad-9ecb-9d60062ba443",
+                    "leftValue": "={{ $('Standardize Input').item.json.action }}",
+                    "rightValue": "get",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Get Campaign"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -528,
+        400
+      ],
+      "id": "a28df574-f345-4d30-bb46-a6629d5b5baf",
+      "name": "Define Action"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1168,
+        304
+      ],
+      "id": "3e492ecf-5ca8-4a67-999f-70a90601890a",
+      "name": "Standardize Input"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Mobile",
+            "Last_Name",
+            "First_Name",
+            "Member_Tier2"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        912
+      ],
+      "id": "4493e6c6-3e3a-4abb-84b6-b53f805f42d2",
+      "name": "Get Zoho Profile",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        912
+      ],
+      "id": "66470d61-ca94-4972-9405-402e1b623a60",
+      "name": "Aggregate",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1072,
+        -16
+      ],
+      "id": "9fd2ca2b-3a2f-4175-bdd3-09d4d0f5033d",
+      "name": "Get API endpoints1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -880,
+        -16
+      ],
+      "id": "c5955fd0-c344-4666-8fe5-f29e09a9fd4a",
+      "name": "Get Zoho access token1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        592
+      ],
+      "id": "3825990e-25ef-45e1-9ba7-02de7e37e939",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints1').item.json.zoho_api_domain }}/crm/v2/Campaigns/search?criteria=(Campaign_Name:equals:20251101 HK Fashion Show)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token1').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -672,
+        -16
+      ],
+      "id": "f63650b8-9f0b-4094-b1e6-27bc3526ebab",
+      "name": "Get campaign id by name1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Campaigns/search?criteria=(id:in:{{ $('Standardize Input').item.json.campaign_id }})",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        608
+      ],
+      "id": "d31b467c-1c23-44b5-a91c-b01fbb3c7696",
+      "name": "Get campaign by ID"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Campaigns/search?criteria=(id:in:{{ $('Standardize Input').item.json.campaign_id }})",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        752
+      ],
+      "id": "6c8d68df-ed18-4930-bac7-dca710e1ca28",
+      "name": "Get campaign by id"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints1').item.json.zoho_api_domain }}/crm/v2/Campaigns/search?criteria=(id:in:6638789000003862059)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token1').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        -16
+      ],
+      "id": "7b409f48-ef5e-4ed5-95f1-9cd24db730bf",
+      "name": "Get campaign by ID1"
+    },
+    {
+      "parameters": {
+        "jsCode": "function findMatchingRecord() {\n    // 假设 contactData 就是您提供的 mobile JSON 数据\n    const contactData = $input.first().json.data;\n\n    // 假设 webhookData 就是您提供的 webhook 的数据\n    const webhookData = $('Standardize Input').first().json;\n\n    const results = [];\n    \n    // 获取 waId\n    const mobile = webhookData.mobile;\n\n    // 查找匹配的记录\n        contactData.forEach(contact => {\n            if (contact.Mobile === mobile) {\n                results.push(contact);\n            }\n        });\n\n    return results.length > 0 ? results : []; // 返回匹配的记录或空数组\n}\n\n// 调用函数并返回结果\nreturn findMatchingRecord();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        912
+      ],
+      "id": "7aee4f50-9b70-455b-99b3-4b4fb23a7aa6",
+      "name": "get zoho profile data (obs)",
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from zoho_contact where mobile = '{{ $('Standardize Input').item.json.mobile }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -944,
+        608
+      ],
+      "id": "d202f0be-e4f0-439d-8f11-667b15ac4ad6",
+      "name": "get zoho profile data",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19ec6806-eeab-479d-beb4-6b9b9e0a04e9",
+              "leftValue": "={{ $('get zoho profile data').item.json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -768,
+        608
+      ],
+      "id": "e6df30bb-a324-4721-873b-e7c4a9f15053",
+      "name": "if data exists"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"body\": {\n      \"campaign_id\": \"6638789000006657026\",\n      \"mobile\": \"85298743343\",\n      \"action\": \"invite\"\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1344,
+        480
+      ],
+      "id": "15d6d562-4661-4085-acd0-5bee9f49df0e",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Add bot msg in Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add ans in Note": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add bot msg in Note": {
+      "main": [
+        [
+          {
+            "node": "Add Campaign Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct Notes": {
+      "main": [
+        [
+          {
+            "node": "Add ans in Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct Notes1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attend": {
+      "main": [
+        [
+          {
+            "node": "POST status to Zoho campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject": {
+      "main": [
+        [
+          {
+            "node": "POST status to Zoho campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get campaign name": {
+      "main": [
+        [
+          {
+            "node": "Construct Notes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Attend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get Zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Get campaign by ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Action": {
+      "main": [
+        [
+          {
+            "node": "Construct Notes1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get campaign name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create invited status in campaign",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get campaign by id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho Profile": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "get zoho profile data (obs)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints1": {
+      "main": [
+        [
+          {
+            "node": "Get Zoho access token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho access token1": {
+      "main": [
+        [
+          {
+            "node": "Get campaign id by name1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get campaign by ID": {
+      "main": [
+        [
+          {
+            "node": "get zoho profile data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get campaign by id": {
+      "main": [
+        []
+      ]
+    },
+    "Get campaign id by name1": {
+      "main": [
+        [
+          {
+            "node": "Get campaign by ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get zoho profile data (obs)": {
+      "main": [
+        []
+      ]
+    },
+    "get zoho profile data": {
+      "main": [
+        [
+          {
+            "node": "if data exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if data exists": {
+      "main": [
+        [
+          {
+            "node": "Define Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "7d8446eb-13ce-4020-8222-29ebcde30997",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "xcebN7QJ6UaNERYz",
+  "tags": []
+}

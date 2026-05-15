@@ -1,0 +1,423 @@
+{
+  "name": "[UAT] Leads Map Contact View Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -576,
+        16
+      ],
+      "id": "759f1653-60b1-463b-b39d-79cc6eb96ba5",
+      "name": "Get zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://sandbox.zohoapis.com/crm/v2/Contacts_Leads_Map",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        32
+      ],
+      "id": "28851165-52dd-43c8-90a1-7eaf41ec93ab",
+      "name": "Get Contact Leads Map",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        -128
+      ],
+      "id": "db1dd72f-62b5-4348-9ba1-026f156cfb95",
+      "name": "Get Leads"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        208
+      ],
+      "id": "a3f0fa19-9988-4727-8875-aada2bfdd320",
+      "name": "Get Contact"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n{{ JSON.stringify(Object.values($json.data)).replace('[[', '[').replace(']]', ']') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        656,
+        32
+      ],
+      "id": "3181f89b-71c6-40fc-bce6-002b25916867",
+      "name": "Lead Map Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Contacts_Leads_Map",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": \n{{ JSON.stringify(Object.values($json.data)).replace('[[', '[').replace(']]', ']') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        32
+      ],
+      "id": "60ef5a1e-5765-47f0-8030-dbbf999181bb",
+      "name": "Post Contact Leads Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設你的 JSON 數據放在 `items` 中\nconst data = items[0].json.data;\n\n// 使用 map 提取所需字段\nconst result = data.map(item => {\n    return {\n        lead_id: item.id,\n        Lead_UID: item.Lead_UID,\n        BU_Product: item.BU_Product,\n        Lead_Name: item.Full_Name\n    };\n});\n\n// 返回提取結果\nreturn result.map(item => ({\n    json: item\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -128
+      ],
+      "id": "59fd30ba-3899-44d7-9454-90888f68e778",
+      "name": "Lead Fetch Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設你已經將 JSON 數據放在 `items` 中\nconst data = items[0].json.data;\n\n// 準備一個陣列來存儲提取的結果\nconst result = data.map(item => {\n    return {\n        contact_id: item.id,\n        Contact_Name: item.Full_Name,\n        Property_Name: item.Property_Name,\n        Member_Tier: item.Member_Tier2,\n        Date_of_Birth: item.Date_of_Birth\n    };\n});\n\n// 返回提取的結果\nreturn result.map(idName => ({\n    json: idName\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        208
+      ],
+      "id": "ba6fb137-431f-4d48-ae20-a3c6c003cf57",
+      "name": "Contact Fetch Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mergedData = $input.first().json.data;\n\n// 创建结果数组\nconst output = { data: [] };\n\n// 创建联系人名称映射以便快速查找\nconst contactsMap = {};\nmergedData.forEach(entry => {\n  if (entry.contact_id) { // 只处理联系人条目\n    contactsMap[entry.Contact_Name] = {\n      id: entry.contact_id,\n      Member_Tier: entry.Member_Tier,\n      Property_Name: entry.Property_Name,\n      Date_of_Birth: entry.Date_of_Birth\n    };\n  }\n});\n\n// 遍历合并数据以创建结果\nmergedData.forEach(entry => {\n  if (!entry.contact_id) { // 只处理潜在客户条目\n    const matchingContact = contactsMap[entry.Lead_Name];\n    if (matchingContact) {\n      output.data.push({\n        Lead_Name: {\n          name: entry.Lead_Name, // 使用潜在客户的名称\n          id: matchingContact.id // 联系人 ID\n        },\n        Lead_Ticket_on_the_Customer: {\n          name: entry.Lead_Name, // 潜在客户的名称\n          id: entry.lead_id // 潜在客户 ID\n        },\n        BU_Product: entry.BU_Product,\n        Member_Tier: matchingContact.Member_Tier,\n        Property_Name: matchingContact.Property_Name,\n        Lead_UID: entry.Lead_UID,\n        Date_of_Birth: matchingContact.Date_of_Birth\n      });\n    }\n  }\n});\n\n// 输出结果\nreturn output; // 返回对象以获得正确格式"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        32
+      ],
+      "id": "51638079-7ee7-48dc-82c7-248b6a9b9405",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        112,
+        32
+      ],
+      "id": "72c7ee95-9b53-46a1-a05c-557e7ddc6bc2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        288,
+        32
+      ],
+      "id": "b7586a4b-ed42-4e65-b93b-2f239a51ee1f",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -944,
+        16
+      ],
+      "id": "486e8119-1aaf-4503-8f75-20d8727c6157",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -784,
+        16
+      ],
+      "id": "53565752-fd39-4f8e-b4bb-cecfa9b1e9e0",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Get Contact Leads Map",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Leads",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Map Data": {
+      "main": [
+        [
+          {
+            "node": "Post Contact Leads Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact": {
+      "main": [
+        [
+          {
+            "node": "Contact Fetch Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact Leads Map": {
+      "main": [
+        []
+      ]
+    },
+    "Get Leads": {
+      "main": [
+        [
+          {
+            "node": "Lead Fetch Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Fetch Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Fetch Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Lead Map Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "51ef8412-eb3f-40f2-b994-fa1e039a0d1c",
+  "meta": {
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "gQ1NycfLwhY2tAZB",
+  "tags": []
+}

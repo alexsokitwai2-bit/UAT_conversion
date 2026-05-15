@@ -1,0 +1,356 @@
+{
+  "name": "Portal to CS Msg Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        112
+      ],
+      "id": "dfbe9045-a964-41c8-b0cb-9d94700404fa",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "msg-to-cs",
+        "authentication": "basicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -112
+      ],
+      "id": "6208be22-128f-4ff8-84c6-3fef6ac63638",
+      "name": "Webhook",
+      "webhookId": "65533274-d8ab-45ea-88e4-8cb94f5a5501",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mYWitmcMYsHEobEy",
+          "name": "Portal Incoming Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "532362cd-ce68-4471-b94c-82c96b092d1e",
+      "name": "Standardize Input"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"body\": \n{\n\"mobile\": \n\"85270000109\",\n\"msg_body\": \n\"Campaign referral\\nCampaign: We cordially invite you to attend The Pulse Watch Show — an exclusive event that celebrates the fusion of classic watchmaking craftsmanship and contemporary elegance. Discover extraordinary timepieces, exceptional design, and the timeless allure of horological artistry for a refined and discerning appreciation experience.\\r\\n\\r\\nDate: 15 May 2026\\r\\nTime: 6:30 PM – 9:30 PM\\r\\nVenue: The Pulse (f63e561f-d8e6-4d80-bee3-f45042923ac0)\\nChannel: wechat\\nPortal chat: http://localhost/customer/85270000109\\nCollected data: none\"\n}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "4dea2799-3632-4fd0-9316-2b82993af985",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.wati_v3_api_domain }}/api/ext/v3/messageTemplates/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"85290556233\",\n  \"template_name\": \"n8n_tpl_call_v2\",\n  \"broadcast_name\": \"test\",\n  \"recipients\": [\n    {\n      \"phone_number\": \"{{ $('Standardize Input').item.json.mobile }}\",\n      \"local_message_id\": \"{{ $('Get Conv ID').item.json.conversationId }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        -304
+      ],
+      "id": "401cf3ee-77e1-4f48-b139-24f4b5cdf396",
+      "name": "Trigger Event Interests Messages",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "2d1f32c7-0932-4b41-a857-50a713fd7a25",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select \"conversationId\" from whatsapp_messages where mobile_num = '{{ $('Standardize Input').item.json.mobile }}' order by timestamp desc limit 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        48,
+        0
+      ],
+      "id": "eed69b74-aa7c-4fba-a2bb-f70b5f88e282",
+      "name": "Get Conv ID",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.wati_v3_api_domain }}/api/ext/v3/messageTemplates/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"85290556233\",\n  \"template_name\": \"blank_tpl\",\n  \"broadcast_name\":\"broadcast_title test123\",\n  \"recipients\": [\n    {\n      \"phone_number\": \"{{ $('Standardize Input').item.json.mobile }}\",\n      \"local_message_id\": \"{{ $('Get Conv ID').item.json.conversationId }}\",\n      \"custom_params\": [\n        {\n          \"name\": \"body\",\n          \"value\": \"{{ JSON.stringify(\n    $('Standardize Input').item.json.msg_body\n      .replace(/\\r?\\n|\\r/g, ' ')\n  ).slice(1,-1)\n}}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "9953af11-b23e-407d-81ad-38cb8b4dc9f9",
+      "name": "Trigger blank tpl messages",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eaa6ea09-b6c7-491c-bd89-405d263e6ded",
+              "name": "html_message",
+              "value": "=Please follow up on Customer <strong>{{ $('Standardize Input').item.json.mobile }}</strong>.<br>\n<br>\n<strong>Content</strong>: {{ $('Standardize Input').item.json.msg_body }}<br>\n<br>\nCheck out the conversation at: {{ \"https://cp-uat.emperorint.com/customer/\" + $('Standardize Input').item.json.mobile }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -256
+      ],
+      "id": "26e1b794-923a-404a-92fb-8760bbf128d7",
+      "name": "Construct HTML Message"
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "it-devsecops@emperorgroup.com;andreali@emperorgroup.com;karmenwong@emperorgroup.com",
+        "subject": "[EIHL-CRM-UAT] Prospect Customer notification - Campaign",
+        "html": "={{ $json.html_message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        -368
+      ],
+      "id": "4b2e7898-2050-4066-a29f-8b7d80b88f71",
+      "name": "Send email",
+      "webhookId": "b610f671-0635-444d-aed0-1a85e09f30cd",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhookbot.c-toss.com/api/bot/webhooks/aba70a46-f9e7-4295-8704-72789158fd48",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": {{ JSON.stringify($json.html_message) }},\n  \"title\": \"Prospect Customer - Campaign\", \n  \"themeColor\": \"00FF00\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        -192
+      ],
+      "id": "c20db417-edf3-4b98-a58b-760a9d7e3266",
+      "name": "Post to Teams Channel"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get Conv ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conv ID": {
+      "main": [
+        [
+          {
+            "node": "Trigger blank tpl messages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Construct HTML Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct HTML Message": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Post to Teams Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "c27989c9-d1fc-4d66-8823-026e59880615",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "Nobewt6v9cRv03SP",
+  "tags": []
+}

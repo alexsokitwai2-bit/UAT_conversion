@@ -1,0 +1,348 @@
+{
+  "name": "Portal to WATI campaign call",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        112
+      ],
+      "id": "3162af27-8db4-46a7-9834-44502fc65e52",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.wati_v3_api_domain }}/api/ext/v3/messageTemplates/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"85290556233\",\n  \"template_name\": \"n8n_tpl_v4\",\n  \"broadcast_name\": \"test\",\n  \"recipients\": [\n    {\n      \"phone_number\": \"{{ $('Standardize Input').item.json.mobile }}\",\n      \"local_message_id\": \"{{ $('Get Conv ID').item.json.conversationId }}\",\n      \"custom_params\": [\n        {\n          \"name\": \"body\",\n          \"value\": \"{{ $('Standardize Input').item.json.body }}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        128
+      ],
+      "id": "53ec55af-9546-4f7c-9c85-9955b5d87eb9",
+      "name": "Trigger campaign messages"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wati_campaign_call",
+        "authentication": "basicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -112
+      ],
+      "id": "0818a61f-bdf7-439c-ab50-7792b8623d93",
+      "name": "Webhook",
+      "webhookId": "f32b1f28-bf50-4570-82f4-6fd18a0754dd",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mYWitmcMYsHEobEy",
+          "name": "Portal Incoming Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "6c6919cd-24e1-4f9d-a515-3c5f699532aa",
+      "name": "Standardize Input"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"body\": \n  {\n    \"mobile\": \"85298743343\",\n    \"action\": \"call\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "ffdac562-faf3-4cc1-80ad-8adfc70bccfc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Standardize Input').item.json.action }}",
+                    "rightValue": "call",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8886807d-90ca-40e7-b010-7db4d4d14b66"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Events Interests tpl"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3fc4c990-a0b8-4e0d-9493-3e8d177de6cc",
+                    "leftValue": "={{ $('Standardize Input').item.json.action }}",
+                    "rightValue": "campaign",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Campaign tpl"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "e59f5093-32d6-44b4-8d7e-5c6cd27d2b5d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.wati_v3_api_domain }}/api/ext/v3/messageTemplates/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"85290556233\",\n  \"template_name\": \"n8n_tpl_call_v2\",\n  \"broadcast_name\": \"test\",\n  \"recipients\": [\n    {\n      \"phone_number\": \"{{ $('Standardize Input').item.json.mobile }}\",\n      \"local_message_id\": \"{{ $('Get Conv ID').item.json.conversationId }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        -112
+      ],
+      "id": "22ad70d0-06e6-43d3-bad2-9677d97b9b8f",
+      "name": "Trigger Event Interests Messages"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "afa59196-3b00-4c67-bb22-9f9cf7542669",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select \"conversationId\" from whatsapp_messages where mobile_num = '{{ $('Standardize Input').item.json.mobile }}' order by timestamp desc limit 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        48,
+        0
+      ],
+      "id": "8a766a6f-c5f3-4b62-a50d-36b8024ffbd8",
+      "name": "Get Conv ID",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Trigger Event Interests Messages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Trigger campaign messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standardize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get Conv ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conv ID": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "db6d8ad1-0e69-490a-8a2b-0f020869c36e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "a2ZaxRyzLWFyiYcz",
+  "tags": []
+}

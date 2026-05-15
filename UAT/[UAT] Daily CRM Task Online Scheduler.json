@@ -1,0 +1,580 @@
+{
+  "name": "[UAT] Daily CRM Task Online Scheduler",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendTemplateMessage?whatsappNumber={{ $json.phone }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_name\": \"crm_daily_task\",\n  \"broadcast_name\": \"CRM PIC Daily Task Alert\",\n  \"parameters\": [\n    {\n      \"Name\": \"name\",\n      \"Value\": \"Sales Team Colleagues\"\n    }\n  ],\n  \"channel_number\": \"85290556233\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        288
+      ],
+      "id": "bdcd04d5-8df9-4cd0-acc8-6957c2b65b80",
+      "name": "Send Task Alert"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "crm_task_mode",
+          "mode": "list",
+          "cachedResultName": "crm_task_mode"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "timestamp",
+              "value": "={{ $json.currentDateTime }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -304,
+        -256
+      ],
+      "id": "823fb408-1973-4c3e-8846-168898ab3a23",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 獲取 GMT+8 時區的時間\nconst options = { timeZone: 'Asia/Hong_Kong', hour12: false };\nconst formatter = new Intl.DateTimeFormat('en-US', options);\n\n// 獲取 GMT+8 時間的各個組件\nconst localDate = new Date(now.toLocaleString(\"en-US\", { timeZone: \"Asia/Hong_Kong\" }));\n\nlocalDate.setHours(localDate.getHours());\n\n// 格式化為 yyyy-MM-dd hh:mm:ss\nconst year = localDate.getFullYear();\nconst month = String(localDate.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始\nconst day = String(localDate.getDate()).padStart(2, '0');\n//const hours = String(localDate.getHours()).padStart(2, '0');\n//const minutes = String(localDate.getMinutes()).padStart(2, '0');\n\nconst currentDateTime = `${year}-${month}-${day}`;\n\nreturn [{ json: { currentDateTime } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -256
+      ],
+      "id": "b5fc11fb-a01c-46b9-96c6-56cf26b082b2",
+      "name": "Now()",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設輸入的 JSON 結構\nconst phoneNumbers = items[0].json.phone;\n\n// 創建 API 請求的數組\nconst requests = phoneNumbers.map(phone => ({\n  json: {\n    phone: phone\n  }\n}));\n\nreturn requests;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "5d7113bd-9079-46b1-919a-cbc2b8fec473",
+      "name": "Breakdown each phone number"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n      \"phone\": [\"85298743343\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        -256
+      ],
+      "id": "a47fb8cc-f510-47df-9cfd-7604cc5405cf",
+      "name": "EIHL Sales Phone number_debug",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            },
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -704,
+        -256
+      ],
+      "id": "8f359b8f-8781-43ba-adb9-86d6fc14f676",
+      "name": "9am 1 day trigger1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        304
+      ],
+      "id": "4b01b80b-1236-4c30-8854-b2c6891b59d0",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/getMessages/{{ $json.phone }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMmZhNzM3NS1hM2U3LTRiMzEtYTQ4ZC1jYTBhYjNiMDM4OTYiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDgvMjEvMjAyNSAwNjo1OTowMCIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.jzazWbBTsV-aowCI7rIjNkbjh9l9bz7oM7Z7mrIk9DA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -896,
+        304
+      ],
+      "id": "9d6eee59-e8ea-48bf-920f-f2ae19f0d17b",
+      "name": "GET Sales Chatroom latest msg time"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input data is assumed to be in the items array\nconst inputData = $input.first().json.data;\n\n// 假设 phone 数据在另一个变量中\nconst phoneData = $('Breakdown each phone number').all();\nconst phoneNumbers = phoneData.map(item => item.json.phone);\n\nconst output = [];\nlet phoneIndex = 0; // 用於跟踪電話索引\n\n// 遍歷每一個 entry\ninputData.forEach(entry => {\n  // Check if the messages object and items array exist\n  if (entry.messages && Array.isArray(entry.messages.items)) {\n    const conversationId = entry.messages.items[0].conversationId; // 獲取當前 conversationId\n\n    // 遍歷所有 message items\n    for (const item of entry.messages.items) {\n      // 檢查 operatorName 為 null 或 eventType 為 broadcastMessage\n      if (item.operatorName === null || item.eventType === 'broadcastMessage') {\n        output.push({\n          created: item.created, // 保留原有的 created 字段\n          currentTimeGMT: new Date().toISOString(), // Get the current time in GMT\n          conversationId: conversationId, // Add conversationId\n          phone: phoneIndex < phoneNumbers.length ? phoneNumbers[phoneIndex] : null // Add corresponding phone number\n        });\n        phoneIndex++; // Increment phone index\n        break; // 找到後退出循環\n      }\n    }\n  }\n});\n\n// Return the output\nreturn output.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        304
+      ],
+      "id": "2738c774-f796-4a0d-a37c-8bb42b2d0132",
+      "name": "Get Latest time",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Assume input data is provided in the items array\nconst inputData = $input.all();\n//const phoneData = $('Breakdown each phone number').all();\n//const phoneNumbers = phoneData.map(item => item.json.phone);\n\n//let phoneIndex = 0;\n// Define the threshold for 23 hours and 55 minutes in milliseconds\nconst threshold = (23 * 60 * 60 * 1000) + (55 * 60 * 1000);\n\n// Process each item to compare the times\nconst output = inputData.map(item => {\n    const createdTime = new Date(item.json.created);\n    const currentTime = new Date(item.json.currentTimeGMT);\n\n    // Calculate the difference in milliseconds\n    const differenceInMs = currentTime - createdTime;\n\n    // Check if the difference is greater than the threshold\n    const isGreaterThanThreshold = differenceInMs > threshold;\n\n    // Return the result with both created time and comparison result\n    return {\n        json: {\n            created: item.json.created,\n            currentTimeGMT: item.json.currentTimeGMT,\n            isGreaterThanThreshold: isGreaterThanThreshold,\n            phone: item.json.phone\n        }\n    };\n});\n\n// Return the output\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        304
+      ],
+      "id": "66023220-cdde-4cc0-a18c-0685c62a085e",
+      "name": "Compare if greater than 23 hours 55 mins"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b5d640b4-9781-4db9-bae6-557d73dada20",
+              "leftValue": "={{ $json.isGreaterThanThreshold }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        304
+      ],
+      "id": "957ce466-75b3-4cb4-a3db-d2d3da6115e5",
+      "name": "IF YES then send alert"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -912,
+        0
+      ],
+      "id": "dd1475dc-05db-41a7-ba38-4bc90887b852",
+      "name": "1 hour time trigger"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n      \"phone\": [\"85296611570\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        0
+      ],
+      "id": "0476d653-0a31-42f6-89e1-1783fb2df5f4",
+      "name": "EIHL Sales Phone number List"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        688
+      ],
+      "id": "15a379de-9092-43d7-8971-9f5f6030cf05",
+      "name": "Aggregate1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/getMessages/85298704629",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMmZhNzM3NS1hM2U3LTRiMzEtYTQ4ZC1jYTBhYjNiMDM4OTYiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDgvMjEvMjAyNSAwNjo1OTowMCIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.jzazWbBTsV-aowCI7rIjNkbjh9l9bz7oM7Z7mrIk9DA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -992,
+        672
+      ],
+      "id": "6ef27e62-bf42-41a6-a2e1-4bd7bffed974",
+      "name": "GET Sales Chatroom latest msg time debug",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input data is assumed to be in the items array\nconst inputData = $input.first().json.data;\n\n// 假设 phone 数据在另一个变量中\nconst phoneData = $('Breakdown each phone number').all();\nconst phoneNumbers = phoneData.map(item => item.json.phone);\n\nconst output = [];\nconst conversationMap = {}; // 用於跟踪每個 conversationId 的狀態\nlet phoneIndex = 0; // 用於跟踪電話索引\n\ninputData.forEach(entry => {\n  // Check if the messages object and items array exist\n  if (entry.messages && Array.isArray(entry.messages.items)) {\n    // Map over the items to extract the created field and current time\n    entry.messages.items.forEach(item => {\n      // 獲取當前的 conversationId\n      const conversationId = item.conversationId;\n\n      // 如果 operatorName 為 null 且尚未處理過該 conversationId\n      if (item.operatorName === null && !conversationMap[conversationId]) {\n        // 確保電話索引不超出範圍\n        if (phoneIndex < phoneNumbers.length) {\n          output.push({\n            created: item.created, // Extract the created field\n            currentTimeGMT: new Date().toISOString(), // Get the current time in GMT\n            conversationId: conversationId, // Add conversationId\n            phone: phoneNumbers[phoneIndex] // Add corresponding phone number\n          });\n          phoneIndex++; // Increment phone index\n        }\n        // 標記該 conversationId 已處理\n        conversationMap[conversationId] = true;\n      }\n    });\n  }\n});\n\n// Return the output\nreturn output.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        704
+      ],
+      "id": "ad779d6e-46cc-4445-af34-d3e7a853822a",
+      "name": "Get Latest time bak",
+      "alwaysOutputData": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "johnathantsecl@emperorgroup.com",
+        "subject": "[EIHL-CRM-UAT] CS Latest Online Email Report",
+        "html": "={{ $json.htmlTable }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        464
+      ],
+      "id": "9c93ec88-9842-41db-9368-31dc418f2b29",
+      "name": "Send email",
+      "webhookId": "a7b43c47-2b70-411f-82a4-9eaeb10764a6",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.all(); // 獲取所有輸入數據\n\n// 假設這是包含手機號碼的 JSON 列表\n// const phoneList = [{\n//     \"phone\": [\n//         \"85296611570\",\n//         \"85298704629\"\n//     ]\n// }];\n\nconst phoneList = $('EIHL Sales Phone number List').all();\n\n// 提取手機號碼數組\nconst phoneNumbers = phoneList[0].json.phone; // 訪問第一個對象的 phone 陣列\n\n// 建立一個對應的 cs_latest_online 映射\nconst phoneOnlineMap = {};\n\n// 將 inputData 轉換為一個映射\ninputData.forEach(record => {\n    if (record.json.cs_latest_online && record.json.phone) {\n        phoneOnlineMap[record.json.phone] = record.json.cs_latest_online;\n    }\n});\n\n// 建立 HTML 表格\nlet html = `\n<style>\n    body {\n        font-family: Arial, sans-serif;\n        margin: 20px;\n        padding: 20px;\n        background-color: #f4f4f4;\n    }\n    table {\n        width: 100%;\n        border-collapse: collapse;\n        margin: 20px 0;\n        background-color: #fff;\n        border: 2px solid #000;\n    }\n    th, td {\n        border: 1px solid #000;\n        padding: 8px;\n        text-align: left;\n    }\n    th {\n        background-color: #007BFF;\n        color: white;\n    }\n    tr:hover {\n        background-color: #f1f1f1;\n    }\n</style>\n\n<table>\n    <thead>\n        <tr>\n            <th>CS Sales Phone</th>\n            <th>Latest Online Time (GMT+8)</th>\n        </tr>\n    </thead>\n    <tbody>`;\n\nphoneNumbers.forEach(phone => {\n    // 獲取對應的 cs_latest_online\n    const csLatestOnline = phoneOnlineMap[phone] || null;\n\n    // 將 UTC 日期轉換為 GMT+8，如果沒有則返回 N/A\n    const formattedDate = csLatestOnline \n        ? new Date(csLatestOnline).getTime() + 8 * 60 * 60 * 1000 \n        : null;\n    const displayDate = formattedDate \n        ? new Date(formattedDate).toLocaleString('en-US') \n        : 'N/A';\n\n    html += `\n        <tr>\n            <td>${phone}</td>\n            <td>${displayDate}</td>\n        </tr>`;\n});\n\nhtml += `\n    </tbody>\n</table>`;\n\nreturn [{ json: { htmlTable: html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        464
+      ],
+      "id": "d3c3a081-61f9-4841-9424-0284b8463b7a",
+      "name": "Construct email table",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "SALES phone list",
+        "height": 272,
+        "width": 216,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -48
+      ],
+      "id": "b5a81945-0402-40db-8962-975f59a0d530",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input data is assumed to be in the items array\nconst inputData = $input.first().json.data;\nconst phoneData = $('Breakdown each phone number').all();\nconst phoneNumbers = phoneData.map(item => item.json.phone);\n\nlet latestOnlineRecord = null; // 用於存儲最近一次的 \"Online\" 記錄\nlet phoneIndex = 0; // 用於跟踪電話索引\n\n// 遍歷每一個 entry\ninputData.forEach(entry => {\n  // Check if the messages object and items array exist\n  if (entry.messages && Array.isArray(entry.messages.items)) {\n    \n    // 遍歷所有 message items\n    for (const item of entry.messages.items) {\n      // 檢查 text 是否為 \"Online\"\n      if (item.text === \"Online\") {\n        // 如果沒有記錄或找到的 created 時間更晚，則更新 latestOnlineRecord\n        if (!latestOnlineRecord || new Date(item.created) > new Date(latestOnlineRecord.created)) {\n          latestOnlineRecord = {\n            cs_latest_online: item.created, // 保存最近的 created 時間\n            conversationId: item.conversationId, // 保存 conversationId （可選）\n            phone: phoneIndex < phoneNumbers.length ? phoneNumbers[phoneIndex] : null // Add corresponding phone number\n          };\n          phoneIndex++; // Increment phone index\n          break; // 找到後退出循環\n        }\n      }\n    }\n  }\n});\n\n// Return the latest online record or null if none found\nreturn latestOnlineRecord ? [{ json: latestOnlineRecord }] : [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        464
+      ],
+      "id": "d71d95d5-45b1-42f9-aea4-f5df7a5dd73a",
+      "name": "Get Sales Online Latest Time",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Select rows from a table": {
+      "main": [
+        []
+      ]
+    },
+    "Now()": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Breakdown each phone number": {
+      "main": [
+        [
+          {
+            "node": "GET Sales Chatroom latest msg time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIHL Sales Phone number_debug": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Get Latest time",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Sales Online Latest Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Sales Chatroom latest msg time": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest time": {
+      "main": [
+        [
+          {
+            "node": "Compare if greater than 23 hours 55 mins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare if greater than 23 hours 55 mins": {
+      "main": [
+        [
+          {
+            "node": "IF YES then send alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF YES then send alert": {
+      "main": [
+        [
+          {
+            "node": "Send Task Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "1 hour time trigger": {
+      "main": [
+        [
+          {
+            "node": "EIHL Sales Phone number List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIHL Sales Phone number List": {
+      "main": [
+        [
+          {
+            "node": "Breakdown each phone number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        []
+      ]
+    },
+    "GET Sales Chatroom latest msg time debug": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct email table": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sales Online Latest Time": {
+      "main": [
+        [
+          {
+            "node": "Construct email table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "1384e930-34d1-4944-80d9-226bbb7ef24e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "63WUlcXuXwetVJxS",
+  "tags": []
+}

@@ -1,0 +1,813 @@
+{
+  "name": "Pass2U Virutal Membership Card",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Member_Tier2",
+            "field3",
+            "Full_Name",
+            "vcard",
+            "Membership_Number",
+            "Mobile",
+            "Virtual_Card_ID",
+            "Virtual_Card_Model"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        0
+      ],
+      "id": "6dee9e92-bd43-46e3-8547-d02b2a5485ee",
+      "name": "Get many contacts",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        0
+      ],
+      "id": "77fecb7b-7eba-4438-b57d-a40be8dbcdd4",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all(); // 获取所有输入数据\n\n// 确保 data[0] 存在再进行筛选\nif (data.length && data[0].json.data) {\n    // 从查询参数中获取 ID\n    const idQuery = $('Webhook').first().json.query.id.trim();\n\n    let ids; // 用于存储 ID 数组\n\n    // 检查 ID 字符串是否包含逗号\n    if (idQuery.includes(',')) {\n        // 如果包含逗号，拆分成数组\n        ids = idQuery.split(',').map(id => id.trim());\n    } else {\n        // 如果不包含逗号，直接将 ID 放入数组\n        ids = [idQuery];\n    }\n\n    // 筛选出 ID 为触发的用户，且确保 vcard 不是 'yes'（忽略大小写）\n    const filteredData = data[0].json.data.filter(item => \n        ids.includes(item.id) \n      //&& (item.vcard === null || item.vcard.toLowerCase() !== 'yes')\n    );\n\n    // 将每个筛选后的结果转换为包含 json 的对象\n    const output = filteredData.map(item => ({ json: item }));\n\n    // 返回结果\n    if (output.length > 0) {\n        return output; // 如果有结果，返回过滤后的数据\n    } else {\n        return [{ json: {} }]; // 如果没有数据，返回空对象\n    }\n} else {\n    // 如果没有找到数据，返回一个空数组\n    return [{ json: {} }]; // 返回一个空对象\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        0
+      ],
+      "id": "6a8160c4-5d5b-4ae4-a7f9-0dc1189b5328",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "path": "vcard-issue",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        80
+      ],
+      "id": "d8899e4d-f1c7-42af-b612-804aef3740d3",
+      "name": "Webhook",
+      "webhookId": "25d5b122-665c-4ba7-ac93-96487a788338"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pass2u.net/v2/models/358001/passes/4luMLRVtDvj3/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "bc22507fd8fca07a5f559f89cba31db5"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -864,
+        -240
+      ],
+      "id": "ce7e8bb2-71a8-4759-ae19-63614d9a7f70",
+      "name": "Sample API Call",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set URL').item.json.URL }}/passes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "959cbcdda860d467663bb9f2405b1a92"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\t\"fields\":[\n\t\t{\n\t\t\t\"key\":\"name\",\n\t\t\t\"label\":\"姓名\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Full_Name }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"memNum\",\n\t\t\t\"label\":\"會員編號\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Membership_Number }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"expiryDate\",\n\t\t\t\"label\":\"會籍到期日\",\n\t\t\t\"value\":\"{{ new Date($('Code').item.json.field3).toISOString().replace('Z', '+00:00').slice(0, -10) + '+00:00' }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"tier\",\n\t\t\t\"label\":\"會員級別\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Member_Tier2 }}\"\n\t\t}\n\t]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -352,
+        624
+      ],
+      "id": "2dd0049a-dd01-468f-9917-16ae27a2e000",
+      "name": "Create vcard"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "update",
+        "contactId": "={{ $('Code').item.json.id }}",
+        "updateFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "vcard",
+                "value": "Yes"
+              },
+              {
+                "fieldId": "Virtual_Card_ID",
+                "value": "={{ $('Create vcard').item.json.passId }}"
+              },
+              {
+                "fieldId": "Virtual_Card_Model",
+                "value": "={{ $('Create vcard').item.json.modelId.toString() }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        96,
+        624
+      ],
+      "id": "0fffc923-60d6-49be-b7f9-71e2590726ac",
+      "name": "Update a contact",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.pass2u.net/v2/models/360670/passes/{{ $('Code').item.json.Virtual_Card_ID }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "959cbcdda860d467663bb9f2405b1a92"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\t\"fields\":[\n\t\t{\n\t\t\t\"key\":\"name\",\n\t\t\t\"label\":\"姓名\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Full_Name }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"memNum\",\n\t\t\t\"label\":\"會員編號\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Membership_Number }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"expiryDate\",\n\t\t\t\"label\":\"會籍到期日\",\n\t\t\t\"value\":\"{{ new Date($('Code').item.json.field3).toISOString().replace('Z', '+00:00').slice(0, -10) + '+00:00' }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"tier\",\n\t\t\t\"label\":\"會員級別\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Member_Tier2 }}\"\n\t\t}\n\t]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -352,
+        816
+      ],
+      "id": "cfd3c039-52a0-4812-ab14-cf3c49c36366",
+      "name": "Update vcard"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code').item.json.Virtual_Card_ID }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "65a8b5c6-f22b-48e6-99d9-74efddfd2222"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create card"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "525d71c7-5685-4738-9b08-ef16f1745572",
+                    "leftValue": "={{ $('Code').item.json.Virtual_Card_ID }}",
+                    "rightValue": "yes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "modify card"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -832,
+        640
+      ],
+      "id": "1a404589-96ea-43be-9672-638d7ee39335",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "324dd899-707a-4f82-8efb-ebc4e306ef57",
+              "leftValue": "={{ $('Code').item.json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "eec37b5e-6649-4cb7-8239-3c2a0719d03a",
+      "name": "If data exists"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code').item.json.Member_Tier2 }}",
+                    "rightValue": "Tier1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0532ef83-220c-4e8a-8035-438de6773cfa"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "T1 Card"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "007a0907-5287-4908-af59-3749a9cb59a7",
+                    "leftValue": "={{ $('Code').item.json.Member_Tier2 }}",
+                    "rightValue": "Tier2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "T2 Card"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a2b22b91-3512-4e5e-9b45-0cbb99f17b0f",
+                    "leftValue": "={{ $('Code').item.json.Member_Tier2 }}",
+                    "rightValue": "Tier3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "T3 Card"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -832,
+        352
+      ],
+      "id": "cd4fe9e5-37ed-4cfd-b54d-5de5fdb6555f",
+      "name": "Get Tier template"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98995d90-09a3-45ce-8ba9-4c5a873523fd",
+              "name": "modelId",
+              "value": "363124",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -560,
+        240
+      ],
+      "id": "ee443c01-ff81-47d5-842c-a0aa515b757f",
+      "name": "T1 card ID"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98995d90-09a3-45ce-8ba9-4c5a873523fd",
+              "name": "URL",
+              "value": "=https://api.pass2u.net/v2/models/{{ $json.modelId }}",
+              "type": "string"
+            },
+            {
+              "id": "6fc7dd3a-4bb4-4185-ac15-134fdaaffc97",
+              "name": "vcard_model",
+              "value": "={{ $json.modelId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        368
+      ],
+      "id": "85077a01-3ea8-4056-a28a-b8acf7978498",
+      "name": "Set URL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98995d90-09a3-45ce-8ba9-4c5a873523fd",
+              "name": "modelId",
+              "value": "362349",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -560,
+        368
+      ],
+      "id": "c6844181-89a9-47b8-9e26-c27b78dec7ba",
+      "name": "T2 card ID"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendTemplateMessage?whatsappNumber={{ $('Code').item.json.Mobile }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_name\": \"virtual_card_v2\",\n  \"broadcast_name\": \"Emperior Membership Card\",\n  \"parameters\": [\n    {\n      \"Name\": \"passId\",\n      \"Value\": \"{{ $json.passId }}\"\n    }\n  ],\n  \"channel_number\": \"85290556233\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        624
+      ],
+      "id": "adc9cc33-c2ee-46ee-8d40-f0d8faf4d5d3",
+      "name": "Send VCard URL by WhatsApp"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "update",
+        "contactId": "={{ $('Code').item.json.id }}",
+        "updateFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "vcard",
+                "value": "Yes"
+              },
+              {
+                "fieldId": "Virtual_Card_ID",
+                "value": "=\"{{ $('Update vcard').item.json.passId }}\""
+              },
+              {
+                "fieldId": "Virtual_Card_Model",
+                "value": "={{ $('Update vcard').item.json.modelId }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        96,
+        816
+      ],
+      "id": "db552370-7883-407b-a9ef-e7e7d83648ce",
+      "name": "Update a contact1",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set URL').item.json.URL }}/passes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "959cbcdda860d467663bb9f2405b1a92"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\t\"fields\":[\n\t\t{\n\t\t\t\"key\":\"name\",\n\t\t\t\"label\":\"姓名\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Full_Name }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"memNum\",\n\t\t\t\"label\":\"會員編號\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Membership_Number }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"expiryDate\",\n\t\t\t\"label\":\"會籍到期日\",\n\t\t\t\"value\":\"{{ $('Code').item.json.field3 }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"tier\",\n\t\t\t\"label\":\"會員級別\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Member_Tier2 }}\"\n\t\t}\n\t],\n    \"barcode\": {\n      \"message\":\"Emperior-{{ $('Code').item.json.Membership_Number }}\",\n      \"altText\":\"\"\n      }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        560
+      ],
+      "id": "1c0d317c-2725-462d-bcdc-8d4ffa82e868",
+      "name": "Create vcard bak with barcode",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.pass2u.net/v2/models/360670/passes/{{ $('Code').item.json.Virtual_Card_ID }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "959cbcdda860d467663bb9f2405b1a92"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\t\"fields\":[\n\t\t{\n\t\t\t\"key\":\"name\",\n\t\t\t\"label\":\"姓名\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Full_Name }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"memNum\",\n\t\t\t\"label\":\"會員編號\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Membership_Number }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"expiryDate\",\n\t\t\t\"label\":\"會籍到期日\",\n\t\t\t\"value\":\"{{ $('Code').item.json.field3 }}\"\n\t\t},\n\t\t{\n\t\t\t\"key\":\"tier\",\n\t\t\t\"label\":\"會員級別\",\n\t\t\t\"value\":\"{{ $('Code').item.json.Member_Tier2 }}\"\n\t\t}\n\t],\n    \"barcode\": {\n      \"message\":\"Emperior-{{ $('Code').item.json.Membership_Number }}\",\n      \"altText\":\"\"\n      }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        752
+      ],
+      "id": "2bf66bbf-8b5a-4577-b50f-4cbbe2bde629",
+      "name": "Update vcard bak with barcode",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many contacts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If data exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample API Call": {
+      "main": [
+        []
+      ]
+    },
+    "Create vcard": {
+      "main": [
+        [
+          {
+            "node": "Send VCard URL by WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Create vcard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update vcard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If data exists": {
+      "main": [
+        [
+          {
+            "node": "Get Tier template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update vcard": {
+      "main": [
+        [
+          {
+            "node": "Update a contact1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tier template": {
+      "main": [
+        [
+          {
+            "node": "T1 card ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "T2 card ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "T1 card ID": {
+      "main": [
+        [
+          {
+            "node": "Set URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set URL": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "T2 card ID": {
+      "main": [
+        [
+          {
+            "node": "Set URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send VCard URL by WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Update a contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a contact": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "5aa26e0e-8f10-4767-825f-125fd065bc1e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "HZLGnbGNMVeZaRRM",
+  "tags": []
+}

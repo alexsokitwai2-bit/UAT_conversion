@@ -1,0 +1,160 @@
+{
+ "domains": {
+   "cp-uat.emperorint.com": "cp.emperorint.com"
+ },
+ "credentialMappings": {
+   "postgres_uat_n8n_admin": {
+     "oldId": "cj1RzUB8nTNEHJpu",
+     "newId": "PROD_POSTGRES_N8N_ADMIN_ID",
+     "oldName": "Postgres-UAT-n8n-admin",
+     "newName": "PROD_Postgres_N8N_Admin"
+   },
+   "postgres_account_2": {
+     "oldId": "d8WzG2fbrDJOiMua",
+     "newId": "PROD_POSTGRES_ACCOUNT_2_ID",
+     "oldName": "Postgres account 2",
+     "newName": "PROD_Postgres_Account_2"
+   },
+   "zoho_sandbox_account": {
+     "oldId": "GVUtg09pbovbNsot",
+     "newId": "PROD_ZOHO_OAUTH2_API_ID",
+     "oldName": "Zoho Sandbox Account",
+     "newName": "PROD_Zoho_OAuth2_Account"
+   },
+   "smtp1": {
+     "oldId": "vVkRUUFgjNO8UXJJ",
+     "newId": "PROD_SMTP_ID",
+     "oldName": "smtp1",
+     "newName": "PROD_SMTP"
+   },
+   "openai_eas_qwq_32b": {
+     "oldId": "IWrwVx5slT5ZvY5Q",
+     "newId": "PROD_OPENAI_EAS_QWQ_32B_ID",
+     "oldName": "EAS-QwQ-32B",
+     "newName": "PROD_OpenAI_EAS_QWQ_32B"
+   },
+   "openai_bailian_llm": {
+     "oldId": "JkkvTVOVifxXlEIk",
+     "newId": "PROD_OPENAI_BAILIAN_LLM_ID",
+     "oldName": "BaiLian LLM",
+     "newName": "PROD_BaiLian_LLM"
+   },
+   "openai_eas_qwq_32b_awq": {
+     "oldId": "siM0YOF4nBlvqFif",
+     "newId": "PROD_OPENAI_EAS_QWQ_32B_AWQ_ID",
+     "oldName": "EAS-QwQ-32B-AWQ",
+     "newName": "PROD_OpenAI_EAS_QWQ_32B_AWQ"
+   },
+   "openai_qwq_32b_awq_h20": {
+     "oldId": "liw3QpXpE9Yv0wY6",
+     "newId": "PROD_OPENAI_QWQ_32B_AWQ_H20_ID",
+     "oldName": "QwQ-32B-AWQ-H20",
+     "newName": "PROD_QWQ_32B_AWQ_H20"
+   },
+   "openai_qwq_32b_h20": {
+     "oldId": "w3kPux4oaomNOhL2",
+     "newId": "PROD_OPENAI_QWQ_32B_H20_ID",
+     "oldName": "QwQ-32B-H20",
+     "newName": "PROD_QWQ_32B_H20"
+   },
+   "openai_gpt_oss_20b": {
+     "oldId": "a6lax382yGh0yOlW",
+     "newId": "PROD_OPENAI_GPT_OSS_20B_ID",
+     "oldName": "gpt-oss-20b",
+     "newName": "PROD_gpt_oss_20b"
+   },
+   "openai_gpt_oss_20b_gu30": {
+     "oldId": "DpzVBl6XYtef5RYz",
+     "newId": "PROD_OPENAI_GPT_OSS_20B_GU30_ID",
+     "oldName": "gpt-oss-20b-gu30",
+     "newName": "PROD_gpt_oss_20b_gu30"
+   },
+   "openai_gpt_oss_20b_gu60": {
+     "oldId": "exBzlgwOmjUzeerz",
+     "newId": "PROD_OPENAI_GPT_OSS_20B_GU60_ID",
+     "oldName": "gpt-oss-20b-gu60",
+     "newName": "PROD_gpt_oss_20b_gu60"
+   },
+   "openai_gpt_oss_20b_gu60x2": {
+     "oldId": "3YjT59ndtBLMgKfg",
+     "newId": "PROD_OPENAI_GPT_OSS_20B_GU60X2_ID",
+     "oldName": "gpt-oss-20b-gu60x2",
+     "newName": "PROD_gpt_oss_20b_gu60x2"
+   },
+   "ollama_account": {
+     "oldId": "UP4cGZapz3Gde5aJ",
+     "newId": "PROD_OLLAMA_API_ID",
+     "oldName": "Ollama account",
+     "newName": "PROD_Ollama_Account"
+   },
+   "redis_uat": {
+     "oldId": "iUORWQX1GuwmQDfh",
+     "newId": "PROD_REDIS_ID",
+     "oldName": "rds-redis-uat",
+     "newName": "PROD_Redis"
+   },
+   "s3_aliyun_oss": {
+     "oldId": "uzMQcw93nGCOhEZE",
+     "newId": "PROD_S3_ALIYUN_OSS_ID",
+     "oldName": "AliYun OSS credential",
+     "newName": "PROD_AliYun_OSS_Credential"
+   },
+   "httpbasic_wechat_proxy": {
+     "oldId": "QxxEoKqsZY22iyJv",
+     "newId": "PROD_HTTP_BASIC_AUTH_WECHAT_PROXY_ID",
+     "oldName": "wechat proxy basic auth",
+     "newName": "PROD_Wechat_Proxy_Basic_Auth"
+   },
+   "httpbasic_portal_incoming_auth": {
+     "oldId": "mYWitmcMYsHEobEy",
+     "newId": "PROD_HTTP_BASIC_AUTH_PORTAL_INCOMING_ID",
+     "oldName": "Portal Incoming Auth",
+     "newName": "PROD_Portal_Incoming_Auth"
+   }
+ },
+ "workflowMappings": {
+   "errorWorkflow": {
+     "oldId": "Bd7wEK5rKd6CqgGk",
+     "newId": "PROD_ERROR_WORKFLOW_ID"
+   },
+   "subWorkflows": [
+     {
+       "oldId": "M7hAgXMlCnDIuWWa",
+       "newId": "PROD_CENTRAL_MESSAGE_PIPELINE_ID"
+     },
+     {
+       "oldId": "Ao83XKq1xbKVTEqn",
+       "newId": "PROD_TURN_AI_MODE_ON_OFF_OPERATOR_ID"
+     },
+     {
+       "oldId": "xcebN7QJ6UaNERYz",
+       "newId": "PROD_ZOHO_CAMPAIGN_WORKFLOW_ID"
+     },
+     {
+       "oldId": "18RuWZgvjc3SyKZ7",
+       "newId": "PROD_LEAD_MODULES_ID"
+     },
+     {
+       "oldId": "eAJFaqufxysaclku",
+       "newId": "PROD_OSS_BUCKET_POC_ID"
+     },
+     {
+       "oldId": "szs8B3QxMk3m469Z",
+       "newId": "PROD_ZOHO_WATI_DATA_SYNC_COPY_ID"
+     }
+   ]
+ },
+ "bucketMappings": {
+   "eihl-crm-storage-uat": "eihl-crm-storage-prod"
+ },
+ "watiChannels": {
+   "85290556233": "8529123456798"
+ },
+ "emailMappings": {
+   "uat@emperorint.com": "prod@emperorint.com"
+ },
+  "webhookPathMappings": {
+    "zoho-uat": "zoho",
+    "whatsapp-in-uat-v2": "whatsapp-in-v2"
+  }
+}

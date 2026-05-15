@@ -1,0 +1,516 @@
+{
+  "name": "[UAT] Recall Zoho API Token",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 55
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        560
+      ],
+      "id": "771f1872-c168-40ea-a69f-e54fc3ae1084",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://accounts.zoho.com/oauth/v2/token",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "1000.JQBW9W2LXD7C9DIBOJPD8HO1ZSQBOK"
+            },
+            {
+              "name": "client_secret",
+              "value": "e78077e0141ffcbbdef3fd952e6c8422edafc736fc"
+            },
+            {
+              "name": "scope",
+              "value": "ZohoCRM.modules.ALL"
+            },
+            {
+              "name": "soid",
+              "value": "ZohoCRM.884317707"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        112
+      ],
+      "id": "9d883057-607a-4463-8324-283e19e87688",
+      "name": "Get zoho access token bakup (JT account)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 獲取 GMT+8 時區的時間\nconst options = { timeZone: 'Asia/Hong_Kong', hour12: false };\nconst formatter = new Intl.DateTimeFormat('en-US', options);\n\n// 獲取 GMT+8 時間的各個組件\nconst localDate = new Date(now.toLocaleString(\"en-US\", { timeZone: \"Asia/Hong_Kong\" }));\n\n// 加一個小時\nlocalDate.setHours(localDate.getHours() + 1);\n\n// 格式化為 yyyy-MM-dd hh:mm:ss\nconst year = localDate.getFullYear();\nconst month = String(localDate.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始\nconst day = String(localDate.getDate()).padStart(2, '0');\nconst hours = String(localDate.getHours()).padStart(2, '0');\nconst minutes = String(localDate.getMinutes()).padStart(2, '0');\nconst seconds = String(localDate.getSeconds()).padStart(2, '0');\n\nconst currentDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n\nreturn [{ json: { currentDateTime } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        480
+      ],
+      "id": "6901d8c3-d8e5-44c3-996a-15d635c78313",
+      "name": "Now() plus 1 hour2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 獲取 GMT+8 時區的時間\nconst options = { timeZone: 'Asia/Hong_Kong', hour12: false };\nconst formatter = new Intl.DateTimeFormat('en-US', options);\n\n// 獲取 GMT+8 時間的各個組件\nconst localDate = new Date(now.toLocaleString(\"en-US\", { timeZone: \"Asia/Hong_Kong\" }));\n\n// 加一個小時\nlocalDate.setHours(localDate.getHours() + 1);\n\n// 格式化為 yyyy-MM-dd hh:mm:ss\nconst year = localDate.getFullYear();\nconst month = String(localDate.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始\nconst day = String(localDate.getDate()).padStart(2, '0');\nconst hours = String(localDate.getHours()).padStart(2, '0');\nconst minutes = String(localDate.getMinutes()).padStart(2, '0');\nconst seconds = String(localDate.getSeconds()).padStart(2, '0');\n\nconst currentDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n\nreturn [{ json: { currentDateTime } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        672
+      ],
+      "id": "564d0a10-8662-4a95-84ae-fc80b033493b",
+      "name": "Now() plus 1 hour3"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_setting_token",
+          "mode": "list",
+          "cachedResultName": "zoho_setting_token"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "token": "={{ $('Get zoho settings access token').item.json.access_token }}",
+            "timestamp": "={{ $json.currentDateTime }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        720,
+        656
+      ],
+      "id": "8eb7c107-5a5c-43dc-b1c4-05e1c303786d",
+      "name": "Insert rows in a setting token table1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "token": "={{ $('Get zoho access token').item.json.access_token }}",
+            "timestamp": "={{ $json.currentDateTime }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        704,
+        464
+      ],
+      "id": "a420ea4c-a1ca-4b71-ae64-0bc221e2f764",
+      "name": "Insert rows in API token table1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 464,
+        "width": 1320,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        416
+      ],
+      "id": "3a237c05-ba62-4942-853e-460b44711846",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a50d275f-44fa-473e-9ceb-5268dbb3bde1",
+              "leftValue": "={{ $('Get zoho access token').item.json.access_token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        480
+      ],
+      "id": "f981e539-a696-43a8-988b-991b18e49e2f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff5e72d3-caa6-41cf-9da6-f48e1d0e11b8",
+              "leftValue": "={{ $('Get zoho settings access token').item.json.access_token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        672
+      ],
+      "id": "2ed26fa4-1cba-4ef3-8bc6-b46aa2664e00",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -192,
+        560
+      ],
+      "id": "9396dcac-6bc7-4c1c-98af-ffecfb87b5f2",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://accounts.zoho.com/oauth/v2/token",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "={{ $('Get API endpoints').item.json.client_id }}"
+            },
+            {
+              "name": "client_secret",
+              "value": "={{ $('Get API endpoints').item.json.client_secret }}"
+            },
+            {
+              "name": "soid",
+              "value": "=ZohoCRM.{{ $('Get API endpoints').item.json.soid }}"
+            },
+            {
+              "name": "scope",
+              "value": "ZohoCRM.modules.ALL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        480
+      ],
+      "id": "415f0d23-b9b1-48c0-8e38-f2b2c37ca620",
+      "name": "Get zoho access token"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://accounts.zoho.com/oauth/v2/token",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "={{ $('Get API endpoints').item.json.client_id }}"
+            },
+            {
+              "name": "client_secret",
+              "value": "={{ $('Get API endpoints').item.json.client_secret }}"
+            },
+            {
+              "name": "scope",
+              "value": "ZohoCRM.settings.ALL"
+            },
+            {
+              "name": "soid",
+              "value": "=ZohoCRM.{{ $('Get API endpoints').item.json.soid }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        672
+      ],
+      "id": "787f2a3d-3698-44c6-af71-233067a2b934",
+      "name": "Get zoho settings access token"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Now() plus 1 hour2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Now() plus 1 hour3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in API token table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a setting token table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get zoho access token",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get zoho settings access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Now() plus 1 hour2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get zoho settings access token": {
+      "main": [
+        [
+          {
+            "node": "Now() plus 1 hour3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "a4f67b91-4481-4b06-a0b7-c968a0d6a29d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "k4slZgRpXUQ11Dzj",
+  "tags": []
+}

@@ -1,0 +1,336 @@
+{
+  "name": "Central Message Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendSessionMessage/{{ $('Standard Input').item.json.mobile_num }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "messageText",
+              "value": "={{ $('Standard Input').item.json.message }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        48
+      ],
+      "id": "7c362393-7572-4539-a393-512524035470",
+      "name": "Send response to WhatsApp"
+    },
+    {
+      "parameters": {
+        "content": "send reply ",
+        "height": 460,
+        "width": 1212
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -208
+      ],
+      "id": "0c7b77e6-0c0f-406c-8444-88bcdb2acf1b",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://wechat-webhook-dev.emperorgroup.com/mp/message/callback",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=message",
+              "value": "={{ $('Standard Input').item.json.message.replaceAll(\"\\\\n\", \"\\n\") }}"
+            },
+            {
+              "name": "external_id",
+              "value": "={{ $('Standard Input').item.json.external_id }}"
+            },
+            {
+              "name": "=mobile_num",
+              "value": "={{ $('Standard Input').item.json.mobile_num}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        -160
+      ],
+      "id": "c42def07-7c09-43c0-8ce6-c5c468923e68",
+      "name": "Send response to WeChat",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "QxxEoKqsZY22iyJv",
+          "name": "wechat proxy basic auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Standard Input').item.json.channel }}",
+                    "rightValue": "WeChat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "651b9bf5-8d70-4ea9-b2ac-da63c2103f6e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "WeChat"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "477ba62a-2092-4852-9e4f-41705ad9ad35",
+                    "leftValue": "={{ $('Standard Input').item.json.channel }}",
+                    "rightValue": "WATI",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "WATI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        128,
+        -48
+      ],
+      "id": "017d8dc3-7ed3-422b-92d4-3fce2c0bf826",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        -48
+      ],
+      "id": "1112bc90-6345-40df-8619-c895a3f557ed",
+      "name": "Standard Input"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -464,
+        32
+      ],
+      "id": "e7945830-0374-4db0-b966-441c7ef180a2",
+      "name": "From workflow"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "central-msg",
+        "authentication": "basicAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -112
+      ],
+      "id": "2a9ce98e-19a6-46f8-8740-73576c9c5086",
+      "name": "From Webhook",
+      "webhookId": "f6c27b58-2d45-4e36-8950-cd0f5bb687cc",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mYWitmcMYsHEobEy",
+          "name": "Portal Incoming Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        368,
+        32
+      ],
+      "id": "1a773068-7f32-4531-8d31-ad5cb17b5da8",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send response to WeChat": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send response to WeChat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard Input": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "From workflow": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "From Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Send response to WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "eb9d08d8-9eb6-47c7-86a5-08c4863f3cd7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "M7hAgXMlCnDIuWWa",
+  "tags": []
+}

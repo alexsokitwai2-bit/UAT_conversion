@@ -1,0 +1,977 @@
+{
+  "name": "CRM add entitlements v3",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Manual trigger",
+        "height": 260,
+        "width": 568
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -608
+      ],
+      "id": "cb99bbb5-c5d3-4455-80ed-b5e9948d4984",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "From WATI Contacts to Zoho Contacts",
+        "height": 600,
+        "width": 1460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -800
+      ],
+      "id": "720ce1ac-a55d-4709-b895-a4aea160b7ea",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "url": "https://live-mt-server.wati.io/431426/api/v1/getContacts?pageSize=500",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "attribute",
+              "value": "=[{name: \"phone\", operator: \"==\", value: \"85298743343\"}]"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        -688
+      ],
+      "id": "f4791d1c-3ff8-42d5-8cba-341e82584b01",
+      "name": "From phone get WATI details"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "contact_list"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -688
+      ],
+      "id": "7943114c-9230-4a9b-be9d-04cb3d6ceb36",
+      "name": "Get contact attributes"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        -528
+      ],
+      "id": "a72bc51e-919f-4424-8206-d7cf69edb680",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "function getCustomParamsWithEmail() {\n  const contactList = $input.first().json.contact_list[0];\n  const results = [];\n\n  if (Array.isArray(contactList)) {\n    contactList.forEach(contact => {\n      // 檢查 customParams 是否包含 email\n      const hasEmail = contact.customParams.some(param => param.name === \"email\");\n      //import PROD data ONLY\n      const isPROD = contact.customParams.some(param => param.name === \"env\" && param.value === \"prod\");\n      \n      // 如果包含 email，則創建一個對象並添加到 results\n      if (hasEmail && isPROD) {\n        const customParamsObject = {};\n        \n        // 將 customParams 轉換為對象\n        contact.customParams.forEach(param => {\n          customParamsObject[param.name] = param.value;\n        });\n        \n        results.push(customParamsObject);\n      }\n    });\n  } else {\n    console.error(\"contact_list[0] is not an array\", contactList);\n  }\n\n  return results;\n}\n\n// 呼叫函數並返回結果\nreturn getCustomParamsWithEmail();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        -432
+      ],
+      "id": "03b95814-0983-4eac-b496-bd46c87fb472",
+      "name": "Construct profile (if have email)"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "get",
+        "contactId": "6749059000000644078"
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -192
+      ],
+      "id": "63472f81-7394-477f-925d-3ac89d885a1f",
+      "name": "Zoho CRM",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://www.zohoapis.com/crm/v2/Contacts/{{ $('Zoho CRM - Upsert Contact') .item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    {\n      \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\", \n      \"Member_Tier\": [\n        \"{{ $('Construct profile (if have email)').item.json.type }}\"\n      ],\n      \"Tag\": [\n        {\"name\": \"{{ $('Construct profile (if have email)').item.json.type }}\"}\n      ],\n      \"Preferred_Language_1\": [\"{{ $('Construct profile (if have email)').item.json.spe_pri_lang }}\"],\n      \"Talke_Lang\": [\"{{ $('Construct profile (if have email)').item.json.text_pri_lang }}\"],\n      \"Membership_Number\":\"{{ $('Construct profile (if have email)').item.json.mem_num }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        32,
+        -416
+      ],
+      "id": "ff13ba0b-af95-4431-993b-80f4cbf37b0f",
+      "name": "Update array fields"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -944,
+        -528
+      ],
+      "id": "be79b048-c4fe-4d0d-a0e7-5e31973ab45c",
+      "name": "Get zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Contacts_X_Benefit_Items",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": \n{{ JSON.stringify(Object.values($json.data)).replace('[[', '[').replace(']]', ']') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        96
+      ],
+      "id": "2785ca3e-418b-48e7-9448-af33c37342d4",
+      "name": "Add entitlement item"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "50a930c0-9faa-4f62-9e36-77034896ecfc",
+                    "leftValue": "={{ $('Get Customer Tier').item.json.Member_Tier2 }}",
+                    "rightValue": "Tier1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Tier1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9e4da94c-2d0e-44da-99c4-d8c92a480214",
+                    "leftValue": "={{ $('Get Customer Tier').item.json.Member_Tier2 }}",
+                    "rightValue": "Tier2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Tier2"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bc7c6fd8-8a1c-4a15-a4fb-fc62378ab0e7",
+                    "leftValue": "={{ $('Get Customer Tier').item.json.Member_Tier2 }}",
+                    "rightValue": "Tier3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Tier3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -96,
+        64
+      ],
+      "id": "a02cf829-371d-4f04-a6d5-c94e489f3305",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "content": "hardcoded item id",
+        "height": 684,
+        "width": 276,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -176
+      ],
+      "id": "4f35f92e-8e5d-4b87-a7b8-3b956ad9831c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "url": "https://live-mt-server.wati.io/431426/api/v1/getContacts",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "attribute",
+              "value": "[{name: \"phone\", operator: \"==\", value: \"85298743343\"}]"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1632,
+        -192
+      ],
+      "id": "f3246dc2-a707-4e94-8e8a-14acfcdf8dd2",
+      "name": "From phone get WATI details (DEBUG MODE)"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "upsert",
+        "lastName": "=123",
+        "additionalFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "Purchased_Properties",
+                "value": "=123"
+              },
+              {
+                "fieldId": "field",
+                "value": "=123"
+              },
+              {
+                "fieldId": "Property_Amount",
+                "value": "=123"
+              }
+            ]
+          },
+          "Date_of_Birth": "=1/1/2023",
+          "Full_Name": "=123",
+          "Mobile": "=123"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        -192
+      ],
+      "id": "b8277112-644f-4d3a-80f9-116ac94ec96d",
+      "name": "Zoho CRM - Upsert Contact1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Warning: need manual maintain entitlement currently",
+        "height": 604,
+        "width": 212
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -112
+      ],
+      "id": "22d8a806-c42d-4c99-a97e-6f2fb7fa41ca",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n  [\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1星級影院歡聚\",\n          \"id\": \"6749059000002066055\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1精緻餐飲優惠\",\n          \"id\": \"6749059000002133134\"\n        }\n    }, \n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1品味生活優惠\",\n          \"id\": \"6749059000002133139\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1尊貴住宿體驗\",\n          \"id\": \"6749059000002133129\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1星級祝賀\",\n          \"id\": \"6749059000002133119\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1獨家私人音樂會策劃服務\",\n          \"id\": \"6749059000002065986\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1打造歌唱體驗\",\n          \"id\": \"6749059000002065981\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1探索星夢誕生\",\n          \"id\": \"6749059000002065976\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1探索電影魔法\",\n          \"id\": \"6749059000003410002\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1演唱會門票優先預訂\",\n          \"id\": \"6749059000002065955\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1影視盛典及活動\",\n          \"id\": \"6749059000002065950\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1國際級娛樂盛典\",\n          \"id\": \"6749059000002065945\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1國際品牌聯乘活動\",\n          \"id\": \"6749059000002065940\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1國際傢俬展\",\n          \"id\": \"6749059000002065935\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1國際鐘錶展\",\n          \"id\": \"6749059000002065930\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1國際時裝週\",\n          \"id\": \"6749059000002065921\"\n        }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2048,
+        128
+      ],
+      "id": "6065a06e-390f-4f07-8a5c-1d14b35872a5",
+      "name": "Tier1 Entitlement Items bakup",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n  [\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2品味生活優惠\",\n          \"id\": \"6749059000002151031\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2精緻餐飲優惠\",\n          \"id\": \"6749059000002151026\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2尊貴住宿體驗\",\n          \"id\": \"6749059000002151021\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2電影觀賞歡聚\",\n          \"id\": \"6749059000002151016\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2探索星夢誕生\",\n          \"id\": \"6749059000002151011\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2演唱會門票優先預訂\",\n          \"id\": \"6749059000002151006\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2影視盛典及活動\",\n          \"id\": \"6749059000002151001\"\n        }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1824,
+        128
+      ],
+      "id": "557654ee-37b3-467b-9d54-dc6f918fd022",
+      "name": "Tier2 Entitlement Items bakup"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n  [\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T3電影觀賞歡聚\",\n          \"id\": \"6749059000002151042\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T3精緻餐飲優惠\",\n          \"id\": \"6749059000002151047\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Construct profile (if have email)').item.json.name }}\",\n          \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T3品味生活優惠\",\n          \"id\": \"6749059000002151052\"\n        }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1616,
+        128
+      ],
+      "id": "c8606ebe-9837-4ddd-bee2-c5ba895eaadb",
+      "name": "Tier3 Entitlement Items bakup"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "upsert",
+        "lastName": "={{ $('Construct profile (if have email)').item.json.name }}",
+        "additionalFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "Purchased_Properties",
+                "value": "={{ $('Construct profile (if have email)').item.json.property }} {{ $('Construct profile (if have email)').item.json.floor }} {{ $('Construct profile (if have email)').item.json.unit }}"
+              },
+              {
+                "fieldId": "field",
+                "value": "={{ $json.chi_name }}"
+              },
+              {
+                "fieldId": "Property_Amount",
+                "value": "={{ $json.amount }}"
+              },
+              {
+                "fieldId": "Member_Tier2",
+                "value": "={{ $('Construct profile (if have email)').item.json.type }}"
+              },
+              {
+                "fieldId": "Purchased_Date",
+                "value": "={{ $('Construct profile (if have email)').item.json.pur_date }}"
+              },
+              {
+                "fieldId": "Property_Name",
+                "value": "={{ $('Construct profile (if have email)').item.json.property }}"
+              },
+              {
+                "fieldId": "Property_Amount_Decimal",
+                "value": "={{ $json.amount.replace(/\\$/g, '').replace(/,/g, '') }}"
+              }
+            ]
+          },
+          "Email": "={{ $('Construct profile (if have email)').item.json.email }}",
+          "Full_Name": "={{ $('Construct profile (if have email)').item.json.name }}",
+          "Mobile": "={{ $('Construct profile (if have email)').item.json.phone }}"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -432
+      ],
+      "id": "333a0da7-1f1d-45a0-be96-45e7206c44da",
+      "name": "Zoho CRM - Upsert Contact",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "upsert",
+        "lastName": "={{ $('Construct profile (if have email)').item.json.name }}",
+        "additionalFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "Purchased_Properties",
+                "value": "={{ $('Construct profile (if have email)').item.json.property }} {{ $('Construct profile (if have email)').item.json.floor }} {{ $('Construct profile (if have email)').item.json.unit }}"
+              },
+              {
+                "fieldId": "field1",
+                "value": "={{ $json.mem_start }}"
+              },
+              {
+                "fieldId": "field3",
+                "value": "={{ $json.mem_end }}"
+              },
+              {
+                "fieldId": "field",
+                "value": "={{ $json.chi_name }}"
+              },
+              {
+                "fieldId": "Property_Amount",
+                "value": "={{ $json.amount }}"
+              },
+              {
+                "fieldId": "Member_Tier2",
+                "value": "={{ $('Construct profile (if have email)').item.json.type }}"
+              },
+              {
+                "fieldId": "Purchased_Date",
+                "value": "={{ $('Construct profile (if have email)').item.json.pur_date }}"
+              },
+              {
+                "fieldId": "Property_Name",
+                "value": "={{ $('Construct profile (if have email)').item.json.property }}"
+              },
+              {
+                "fieldId": "Property_Amount_Decimal",
+                "value": "={{ $json.amount }}"
+              }
+            ]
+          },
+          "Date_of_Birth": "={{ $('Construct profile (if have email)').item.json.dob }}",
+          "Email": "={{ $('Construct profile (if have email)').item.json.email }}",
+          "Full_Name": "={{ $('Construct profile (if have email)').item.json.name }}",
+          "Mobile": "={{ $('Construct profile (if have email)').item.json.phone }}"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -576
+      ],
+      "id": "5e81512e-233d-4e0e-bc25-1e8a64945b55",
+      "name": "Zoho CRM - Upsert Contact backup node",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://www.zohoapis.com/crm/v2/Contacts/{{ $('Zoho CRM - Upsert Contact') .item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    {\n      \"id\": \"{{ $('Zoho CRM - Upsert Contact').item.json.id }}\", \n      \"Member_Tier\": [\n        \"{{ $('Construct profile (if have email)').item.json.type }}\"\n      ],\n      \"Tag\": [\n        {\"name\": \"{{ $('Construct profile (if have email)').item.json.type }}\"}\n      ],\n      \"Preferred_Language_1\": [\"{{ $('Construct profile (if have email)').item.json.text_pri_lang }}\"],\n      \"Talke_Lang\": [\"{{ $('Construct profile (if have email)').item.json.spe_pri_lang }}\"],\n      \"Membership_Number\":\"{{ $('Construct profile (if have email)').item.json.mem_num }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        -752
+      ],
+      "id": "eab807b7-3bbf-4e70-b627-88e90bbb894e",
+      "name": "Update array fields backup node"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -192,
+        -432
+      ],
+      "id": "b1a0d161-0e46-494c-a3f1-58883528bbb7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Member_Tier2",
+            "Last_Name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        64
+      ],
+      "id": "373888d7-6ee0-4f5f-821a-945d3d81ca4b",
+      "name": "Get Customer Tier",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -368,
+        64
+      ],
+      "id": "b5491ad3-3c4d-4a78-84bc-972b01ee9458",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "get",
+        "contactId": "6749059000005730302"
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        368,
+        -384
+      ],
+      "id": "13a429ae-65aa-44ab-af0d-38a928077a6a",
+      "name": "Get a contact",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1136,
+        -528
+      ],
+      "id": "2a19630b-e701-4828-be8d-a3a3c4da6e2d",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n  [\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1星級影院歡聚\",\n          \"id\": \"6638789000003866056\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1英皇酒店精緻餐飲優惠\",\n          \"id\": \"6638789000003866059\"\n        }\n    }, \n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1品味生活優惠\",\n          \"id\": \"6638789000003866060\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1英皇酒店尊貴住宿體驗\",\n          \"id\": \"6638789000003866058\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1英皇藝人專屬祝賀視頻\",\n          \"id\": \"6638789000003866057\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1獨家私人音樂會策劃服務\",\n          \"id\": \"6638789000003866055\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1錄製唱片體驗\",\n          \"id\": \"6638789000003866073\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1英皇電影拍攝現場探班體驗\",\n          \"id\": \"6638789000003866072\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1演唱會幕後探秘之旅\",\n          \"id\": \"6638789000003866071\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1英皇娛樂演唱會門票優先預訂\",\n          \"id\": \"6638789000003866054\"\n        }\n    },\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1影視盛典及活動\",\n          \"id\": \"6638789000003866053\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T1時尚盛事限定福利\",\n          \"id\": \"6638789000003866052\"\n        }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -96
+      ],
+      "id": "96ce77cc-372a-4737-8151-5e12b520b8f1",
+      "name": "Tier1 Entitlement Items",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n  [\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2品味生活優惠\",\n          \"id\": \"6638789000003866067\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2精緻餐飲優惠\",\n          \"id\": \"6638789000003866066\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2尊貴住宿體驗\",\n          \"id\": \"6638789000003866065\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2電影觀賞歡聚\",\n          \"id\": \"6638789000003866064\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2探索星夢誕生\",\n          \"id\": \"6638789000003866063\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2演唱會門票優先預訂\",\n          \"id\": \"6638789000003866062\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T2影視盛典及活動\",\n          \"id\": \"6638789000003866061\"\n        }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        96
+      ],
+      "id": "47b8405b-d69c-4d78-83da-2b1435784b42",
+      "name": "Tier2 Entitlement Items"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"data\": \n  [\n    {\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T3電影觀賞歡聚\",\n          \"id\": \"6638789000003866068\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T3精緻餐飲優惠\",\n          \"id\": \"6638789000003866069\"\n        }\n    },\n\t{\n      \"Benefit_Category_Name\": \n        {\n          \"name\": \"{{ $('Loop Over Items1').item.json.Last_Name }}\",\n          \"id\": \"{{ $('Loop Over Items1').item.json.id }}\"\n        },\n      \"Benefit_Items\": \n        {\n          \"name\": \"T3品味生活優惠\",\n          \"id\": \"6638789000003866070\"\n        }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        320
+      ],
+      "id": "e4bd8de3-b5ad-4ce4-92e5-ce9f4e75b427",
+      "name": "Tier3 Entitlement Items"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "From phone get WATI details": {
+      "main": [
+        [
+          {
+            "node": "Get contact attributes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get contact attributes": {
+      "main": [
+        [
+          {
+            "node": "Construct profile (if have email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct profile (if have email)": {
+      "main": [
+        [
+          {
+            "node": "Zoho CRM - Upsert Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update array fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Get Customer Tier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add entitlement item": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Tier1 Entitlement Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tier2 Entitlement Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tier3 Entitlement Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho CRM - Upsert Contact": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Update array fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Customer Tier": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tier1 Entitlement Items": {
+      "main": [
+        [
+          {
+            "node": "Add entitlement item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tier2 Entitlement Items": {
+      "main": [
+        [
+          {
+            "node": "Add entitlement item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tier3 Entitlement Items": {
+      "main": [
+        [
+          {
+            "node": "Add entitlement item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cf20747c-fbfb-4c2c-86d0-8ad29cd9a051",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "1uuUJR6h3rNDmeeG",
+  "tags": []
+}

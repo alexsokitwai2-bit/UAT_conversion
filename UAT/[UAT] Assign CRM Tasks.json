@@ -1,0 +1,951 @@
+{
+  "name": "[UAT] Assign CRM Tasks",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm_task",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1424,
+        576
+      ],
+      "id": "98784da8-798c-4daa-a190-6537c63bc1dd",
+      "name": "Webhook",
+      "webhookId": "0a3a8c24-dd5f-42b8-9e89-f38ebc53ddc2"
+    },
+    {
+      "parameters": {
+        "content": "Assign CRM Tasks to opened CS Colleagues",
+        "height": 1012,
+        "width": 2452,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        464
+      ],
+      "id": "78081342-6cd1-40b3-9a19-707de9d193cf",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設輸入的 JSON 結構\nconst phoneNumbers = items[0].json.phone;\n\n// 創建 API 請求的數組\nconst requests = phoneNumbers.map(phone => ({\n  json: {\n    phone: phone\n  }\n}));\n\nreturn requests;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        688
+      ],
+      "id": "9f02eec9-b50d-46ea-9ffe-b88677cbeac8",
+      "name": "Breakdown each phone number"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n      \"phone\": [\"85292269166\",\n                \"85296611570\",\n                \"85298704629\",\n                \"85266891754\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        256
+      ],
+      "id": "bb1784af-c2dc-4221-94e8-fbab412ea605",
+      "name": "EIHL Sales Phone number1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Mobile",
+            "Full_Name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        576
+      ],
+      "id": "7c73b9cd-6603-46da-b768-00550ef11735",
+      "name": "Get many contacts",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        576
+      ],
+      "id": "e176ca52-2e1b-4270-87fe-811081a52f31",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data;\nconst leadUID = $('Webhook').first().json.body.header.mobile; \n\nconst filteredLeads = leads.filter(lead => lead.Mobile === leadUID);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        576
+      ],
+      "id": "ef078768-133f-4fc6-bae1-2fd8f9f9981b",
+      "name": "Get contact ID by Mobile"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "get",
+        "contactId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        576
+      ],
+      "id": "2b960900-1239-473c-82e0-9dacaef3baa6",
+      "name": "Get a contact1",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data;\nconst leadUID = $('Get Task ID').first().json.get_task_id; \n\nconst filteredLeads = leads.filter(lead => lead.Lead_UID === leadUID);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        272
+      ],
+      "id": "83df98d1-7628-4a9b-8ab6-4044377723c1",
+      "name": "Get Lead ID by Lead_UID",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        960
+      ],
+      "id": "53814c94-eb01-4405-9366-f97a8fb71ab3",
+      "name": "Aggregate1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bed02d1-50db-4d10-8a34-bd2282100d63",
+              "name": "get_task_id",
+              "value": "={{  $('Webhook').item.json.body.header.text.split(\":\")[0]  }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        960
+      ],
+      "id": "aed93b17-6f89-46cc-83f3-8ee44bb93551",
+      "name": "Get Task ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data;\nconst leadUID = $('Get Task ID').first().json.get_task_id; \n\nconst filteredLeads = leads.filter(lead => lead.Lead_UID === leadUID);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        960
+      ],
+      "id": "4eee4cc3-f09c-4719-88e4-9b6c23a6ef37",
+      "name": "Get Lead ID by Lead_UID1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n      \"phone\": [\"{{ $('Get specific PIC mobile').first().json.PIC }}\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        496
+      ],
+      "id": "d4b1d250-9167-4e65-b1e3-a44559b15476",
+      "name": "EIHL PIC Phone"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0b5a001-feff-4249-8cbe-c74a6d6524dc",
+              "leftValue": "={{ $('Get specific PIC mobile').first().json.PIC }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        576
+      ],
+      "id": "8cae6b5d-75a1-4595-bd1c-564b585448a2",
+      "name": "Check PIC Mobile, Status"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n      \"phone\": [\"85296618043\"]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        688
+      ],
+      "id": "1fdd23d7-4a56-471e-b25f-3de2930f06dd",
+      "name": "EIHL Sales Phone Number List"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設輸入的 JSON 結構\nconst phoneNumbers = items[0].json.phone;\n\n// 創建 API 請求的數組\nconst requests = phoneNumbers.map(phone => ({\n  json: {\n    phone: phone\n  }\n}));\n\nreturn requests;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        496
+      ],
+      "id": "c430f604-80ad-4794-bdcb-f31f985ac67a",
+      "name": "Breakdown that PIC phone"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendInteractiveButtonsMessage?whatsappNumber={{ $('Breakdown that PIC phone').first().json.phone }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"header\": {\n    \"type\": \"Text\",\n    \"text\": \"{{ $('Webhook').item.json.body.header.text }}\"\n  },\n  \"body\": \"\\nCustomer Basic Info: \\n- Name: **{{ $('Get a contact1').item.json.Full_Name }}**\\n- Mobile: **{{ $('Get a contact1').item.json.Mobile }}**\\n- Tier: **{{ $('Get a contact1').item.json.Member_Tier2 }}**\\n- Purchased Property: **{{ $('Get a contact1').item.json.Purchased_Properties }}**\\n- Purchased date: **{{ $('Get a contact1').item.json.Purchased_Date }}**\\n- Purchased amount: **{{ $('Get a contact1').item.json.Property_Amount }}**\\n- Speech Priority Language: **{{ $('Get a contact1').item.json.Preferred_Language_1[0] }}**\\n- Text Priority Language: **{{ $('Get a contact1').item.json.Talke_Lang[0] }}**\\n\\n**{{ $('Webhook').item.json.body.body.replace(/\\n+/g, '\\\\n').replace(/\\t/g, '  ').trim() }}**\",\n  \"footer\": \"By Emperor Properties\",\n  \"buttons\": [\n    {\n      \"text\": \"{{ $('Webhook').item.json.body.header.text.split(\":\")[0] }}: COMPLETE\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        496
+      ],
+      "id": "b3a82ac1-902e-4803-afac-47733799c124",
+      "name": "CRM Task Message to that PIC"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendInteractiveButtonsMessage?whatsappNumber={{ $('Breakdown each phone number').item.json.phone }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"header\": {\n    \"type\": \"Text\",\n    \"text\": \"{{ $('Webhook').item.json.body.header.text }}\"\n  },\n  \"body\": \"\\nCustomer Basic Info: \\n- Name: **{{ $('Get a contact1').item.json.Full_Name }}**\\n- Mobile: **{{ $('Get a contact1').item.json.Mobile }}**\\n- Tier: **{{ $('Get a contact1').item.json.Member_Tier2 }}**\\n- Purchased Property: **{{ $('Get a contact1').item.json.Purchased_Properties }}**\\n- Purchased date: **{{ $('Get a contact1').item.json.Purchased_Date }}**\\n- Purchased amount: **{{ $('Get a contact1').item.json.Property_Amount }}**\\n- Speech Priority Language: **{{ $('Get a contact1').item.json.Preferred_Language_1[0] }}**\\n- Text Priority Language: **{{ $('Get a contact1').item.json.Talke_Lang[0] }}**\\n\\n**{{ $('Webhook').item.json.body.body.replace(/\\n+/g, '\\\\n').replace(/\\t/g, '  ').trim() }}**\",\n  \"footer\": \"By Emperor Properties\",\n  \"buttons\": [\n    {\n      \"text\": \"{{ $('Webhook').item.json.body.buttons[0].text }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1280,
+        896
+      ],
+      "id": "4b9ee598-71c9-4b6f-8c2f-77e13109b63d",
+      "name": "CRM Task Message to Whole CS"
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Lead_UID",
+            "Lead_Status",
+            "PIC",
+            "PIC_Mobile",
+            "Full_Name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        960
+      ],
+      "id": "dfec6515-01c7-4adc-a16f-9d1a7089a296",
+      "name": "Get many leads2",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Lead_UID",
+            "Lead_Status",
+            "PIC",
+            "PIC_Mobile",
+            "Full_Name",
+            "Follow_up_at"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        1232
+      ],
+      "id": "f97d5122-349f-4afc-8542-f7577601d098",
+      "name": "Get many leads",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        1232
+      ],
+      "id": "6f3d4cd9-66a2-4db9-9dfc-2f149708e9e1",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        1232
+      ],
+      "id": "b8c913da-fc96-45dc-ab26-28252952da0d",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data || [];  // 如果 data 是 undefined，则赋值为一个空数组\nconst name = $('Get contact ID by Mobile').first().json.Full_Name; \n\nconst filteredLeads = leads.filter(lead => lead.Full_Name === name);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        1232
+      ],
+      "id": "605a53ca-97c0-4a52-a300-daf87ecfdaae",
+      "name": "Get all leads on this Customer"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data || [];  // 如果 data 是 undefined，则赋值为一个空数组\n\nconst firstMatch = leads.find(lead => {\n  // 检查 lead 是否存在并且是对象\n  if (lead && typeof lead === 'object') {\n    // 检查 Lead_Status 是否不为 \"Completed\"\n    if (lead.Lead_Status !== \"Completed\") {\n      // 检查 PIC_Mobile 和 PIC 是否有效\n      const pic_mobile = (lead.PIC_Mobile !== null && lead.PIC_Mobile !== '')\n        ? lead.PIC_Mobile\n        : (lead.PIC !== null ? lead.PIC : null);\n      \n      // 只有当 pic_mobile 不为 null 时才符合条件\n      return pic_mobile !== null;\n    }\n  }\n  return false; // 如果 lead 不符合条件，返回 false\n});\n\n// 返回符合条件的第一个匹配项，如果没有找到则返回 null\nif (firstMatch) {\n  return {\n    Full_Name: firstMatch.Full_Name,\n    PIC: (firstMatch.PIC_Mobile !== null && firstMatch.PIC_Mobile !== '') \n         ? firstMatch.PIC_Mobile \n         : firstMatch.PIC,\n    PIC_Name: firstMatch.PIC\n  };\n}\n\n// 如果没有找到匹配项，返回 null\nreturn null;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        1232
+      ],
+      "id": "9fadc636-ff56-4c7b-8667-e9df965ac78c",
+      "name": "Get specific PIC mobile",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "732cbf51-9679-4c80-9381-9f68b5bd3bbb",
+              "leftValue": "={{ $('Get specific PIC mobile').first().json.PIC }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        1232
+      ],
+      "id": "2e64f081-fde8-45ae-b6b9-18611c66009c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $('Aggregate2').first().json.data;\nconst leadUID = $('Get Task ID').first().json.get_task_id; \n\nconst filteredLeads = leads.filter(lead => lead.Lead_UID === leadUID);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        1232
+      ],
+      "id": "8c404d43-3ca5-4e66-811c-6879643672fa",
+      "name": "Get Lead ID by Lead_UID2"
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "update",
+        "leadId": "={{ $('Loop Over Items').item.json.id }}",
+        "updateFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "PIC",
+                "value": "={{ $('Get specific PIC mobile').first().json.PIC_Name }}"
+              },
+              {
+                "fieldId": "PIC_Mobile",
+                "value": "={{ $('Get specific PIC mobile').first().json.PIC }}"
+              },
+              {
+                "fieldId": "Follow_up_at",
+                "value": "={{ $('Now()').item.json.currentDateTime }}"
+              }
+            ]
+          },
+          "Lead_Status": "PIC Following"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        784,
+        1104
+      ],
+      "id": "7400cf0d-9b7b-43c7-a512-5577d2e46bd8",
+      "name": "Update Lead Record to Assigned PIC",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 獲取 GMT+8 時區的時間\nconst options = { timeZone: 'Asia/Hong_Kong', hour12: false };\nconst formatter = new Intl.DateTimeFormat('en-US', options);\n\n// 獲取 GMT+8 時間的各個組件\nconst localDate = new Date(now.toLocaleString(\"en-US\", { timeZone: \"Asia/Hong_Kong\" }));\n\nlocalDate.setHours(localDate.getHours());\n\n// 格式化為 yyyy-MM-dd hh:mm:ss\nconst year = localDate.getFullYear();\nconst month = String(localDate.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始\nconst day = String(localDate.getDate()).padStart(2, '0');\nconst hours = String(localDate.getHours()).padStart(2, '0');\nconst minutes = String(localDate.getMinutes()).padStart(2, '0');\nconst seconds = String(localDate.getSeconds()).padStart(2, '0');\n\nconst currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;\n\nreturn [{ json: { currentDateTime } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        1120
+      ],
+      "id": "efa1f80b-9e9a-4e42-ac68-499164653aa9",
+      "name": "Now()"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $('Aggregate2').first().json.data || [];  // 如果 data 是 undefined，则赋值为一个空数组\nconst name = $('Get contact ID by Mobile').first().json.Full_Name; \n\n// 过滤出名称匹配且 Lead_Status 为 \"Completed\" 的潜在客户\nconst filteredLeads = leads.filter(lead => \n  lead.Full_Name === name && lead.Lead_Status !== \"Completed\"\n);\n\n// 返回符合条件的潜在客户\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        1104
+      ],
+      "id": "e27357f5-7c0e-4544-a23f-0346c9a11f6e",
+      "name": "Get all leads on this Customer1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        352,
+        1104
+      ],
+      "id": "38a873f4-f01e-4490-9311-2d029b017938",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0e79765-8fd8-4caa-9873-5c30c73f2420",
+              "leftValue": "={{ $('Loop Over Items').item.json.PIC }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        1120
+      ],
+      "id": "2ab4b3d5-a7d9-4b08-8b5c-028fb22ba986",
+      "name": "If empty PIC"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Breakdown each phone number": {
+      "main": [
+        [
+          {
+            "node": "CRM Task Message to Whole CS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many contacts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Get contact ID by Mobile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get contact ID by Mobile": {
+      "main": [
+        [
+          {
+            "node": "Get a contact1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a contact1": {
+      "main": [
+        [
+          {
+            "node": "Get Task ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Get Lead ID by Lead_UID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Task ID": {
+      "main": [
+        [
+          {
+            "node": "Get many leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead ID by Lead_UID1": {
+      "main": [
+        []
+      ]
+    },
+    "EIHL PIC Phone": {
+      "main": [
+        [
+          {
+            "node": "Breakdown that PIC phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PIC Mobile, Status": {
+      "main": [
+        [
+          {
+            "node": "EIHL PIC Phone",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "EIHL Sales Phone Number List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIHL Sales Phone Number List": {
+      "main": [
+        [
+          {
+            "node": "Breakdown each phone number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Breakdown that PIC phone": {
+      "main": [
+        [
+          {
+            "node": "CRM Task Message to that PIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many leads2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many leads": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Get all leads on this Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Get specific PIC mobile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all leads on this Customer": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get specific PIC mobile": {
+      "main": [
+        [
+          {
+            "node": "Get Lead ID by Lead_UID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Now()",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check PIC Mobile, Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check PIC Mobile, Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead ID by Lead_UID2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead Record to Assigned PIC": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Now()": {
+      "main": [
+        [
+          {
+            "node": "Get all leads on this Customer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all leads on this Customer1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If empty PIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Task Message to Whole CS": {
+      "main": [
+        []
+      ]
+    },
+    "If empty PIC": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Record to Assigned PIC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "a6af8d2d-2ed9-4420-ae18-8c45a1bac76b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "uGu3QetehtIyI5tm",
+  "tags": []
+}

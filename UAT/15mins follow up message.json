@@ -1,0 +1,974 @@
+{
+  "name": "15mins follow up message",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "dc35e527-bc2e-4ed3-9a59-a8259c6c326a",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT ON (mobile_num,source) timestamp, mobile_num, source, type, \"to\", message \nFROM whatsapp_messages \nwhere (mobile_num like '852%' or mobile_num like '86%' )\nORDER BY mobile_num, source, timestamp DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        192,
+        224
+      ],
+      "id": "bfb9a28f-1a10-4584-b94e-6cb0ec3729be",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        352,
+        224
+      ],
+      "id": "0c86f113-f1fa-4156-bd71-c1e0d4b69312",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendTemplateMessage?whatsappNumber={{ $('if not system or timeout message').item.json.mobile_num }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_name\": \"crm_daily_task\",\n  \"broadcast_name\": \"CRM PIC Daily Task Alert\",\n  \"parameters\": [\n    {\n      \"Name\": \"name\",\n      \"Value\": \"Sales Team Colleagues\"\n    }\n  ],\n  \"channel_number\": \"85290556233\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        -32
+      ],
+      "id": "d5b4c4e3-10db-402d-a544-f05ed764626b",
+      "name": "Send timeout msg by template",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code').item.json.Talke_Lang }}",
+                    "rightValue": "Chi",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    },
+                    "id": "689854fe-9715-49f6-b9fc-c0fdf1b55548"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Chinese Message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a28a07c5-ecec-4ef2-b87e-00d9a9982856",
+                    "leftValue": "={{ $('Code').item.json.Talke_Lang }}",
+                    "rightValue": "Eng",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "English Message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e066195e-c3f7-47a1-bb97-9c107e55f3a1",
+                    "leftValue": "={{ $('Code').item.json.Talke_Lang }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "N/A"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a8cd6bd4-1fe3-46d4-ac4e-c4821ad85a4e",
+                    "leftValue": "={{ $('Code').item.json.Talke_Lang }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Default"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        640,
+        832
+      ],
+      "id": "b8f7e2b3-987b-4ba5-b5b0-324bb62393b2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendSessionMessage/{{ $('Switch').item.json.mobile_num }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "messageText",
+              "value": "=您好！請問是否還需要進一步的協助嗎 ? 如果您還有其他問題，我們很樂意繼續為您服務！ \n\n如果暫時沒有其他需求，歡迎隨時再找我們 !"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        752
+      ],
+      "id": "fd44d8c5-3c3b-46d4-847a-e79c32a6276b",
+      "name": "Send Chinese timeout msg by session msg"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendSessionMessage/{{ $('Switch').item.json.mobile_num }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "messageText",
+              "value": "=Hello, \n\nI wanted to follow up as it has been a little while since your last message. \n\nWould you still require any further assistance? I am happy to continue supporting you with any additional questions or concerns you may have. \n\nIf there is nothing else at the moment, please feel free to reach out whenever you need help in the future. \n\nThank you for your time."
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        928
+      ],
+      "id": "473e7cb8-b5fd-4d4f-ac3c-10e0ee40bb2a",
+      "name": "Send English timeout msg by session msg"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json; // 獲取第一個輸入對象\nconst data = inputData.data; // 獲取嵌套的資料陣列\n//const phoneList = $('EIHL Sales Phone Number List').first().json; // 定义需要排除的手机号码列表\n\n// 将手机号码列表转换为一个 Set，以便快速查找\n//const phoneSet = new Set(phoneList.phone);\n\n// 获取当前时间\nconst currentTime = new Date();\n\n// 过滤记录：排除在手机号码列表中的记录以及15分钟以内的记录\nconst filteredData = data.filter(item => {\n    const timestamp = new Date(item.timestamp);\n    const differenceInMinutes = (currentTime - timestamp) / 1000 / 60; // 转换为分钟\n\n    // 仅保留不在手机号码列表中且距当前时间超过15分钟的记录\n    return differenceInMinutes > 15;\n});\n\n// 创建输出结果\nreturn filteredData.map(item => {\n    const localDate = new Date(item.timestamp);\n    localDate.setHours(localDate.getHours() + 8);  // 转换为 GMT+8\n\n    return {\n        json: {\n            timestamp: `${localDate.toISOString().replace(\"Z\", \"\")}`, // 以 ISO 格式输出并添加时区标识\n            mobile_num: item.mobile_num,\n            message: item.message,\n            source: item.source,\n            to: item.to,\n            type: item.type\n        }\n    };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        224
+      ],
+      "id": "ea754b91-f879-4a4c-8673-2755daebe8a0",
+      "name": "Filter Sales & Check 15 mins intervals"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        208
+      ],
+      "id": "76b75567-00f0-4b5b-be55-a52696c401c5",
+      "name": "Schedule 1 Hour Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        464
+      ],
+      "id": "cf75d0b5-1df0-4807-a17c-10ffd3ad2b67",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Mobile",
+            "Talke_Lang"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        224
+      ],
+      "id": "f39c63c1-1da7-4203-9fe5-7d7e0d18b24d",
+      "name": "Get many contacts",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function addMatchingRecords(data, contacts) {\n    // 遍历 data 数组\n    data.forEach(item => {\n        // 针对每个 data 项的 mobile_num 进行配对\n        const matchingContact = contacts.find(contact => contact.Mobile === item.mobile_num);\n        \n        // 如果找到匹配的联系人，添加到 data 项\n        if (matchingContact) {\n            // 附加联系人信息到 data 项中\n            item.contactId = matchingContact.id; // 添加 contact ID\n            item.Talke_Lang = matchingContact.Talke_Lang; // 将讲语言添加\n        }\n    });\n\n    return data; // 返回修改后的 data 数组\n}\n\n// 示例数据\nconst dataJson = $('Aggregate1').first().json.dataJSON;\n\nconst contactJson = $('Aggregate2').first().json.contactJSON;\n\n// 调用函数\nconst updatedData = addMatchingRecords(dataJson, contactJson);\n\n// 返回结果\nreturn updatedData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        496
+      ],
+      "id": "2266d3a9-1a1a-4a9e-8347-84572a33d025",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "dataJSON",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        560,
+        480
+      ],
+      "id": "f5e03567-b7a8-4f87-bf49-2511d2f5b6e1",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "contactJSON",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        16,
+        224
+      ],
+      "id": "f83b95d4-cda4-4577-86ad-319f476294ca",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a953c2e1-4c9e-4b82-8666-8015114da99d",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.message }}",
+              "rightValue": "=您好！請問是否還需要進一步的協助嗎 ? 如果您還有其他問題，我們很樂意繼續為您服務！ \n\n如果暫時沒有其他需求，歡迎隨時再找我們 !",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "827749bb-d6aa-46a2-bcf5-4880932579d7",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.message }}",
+              "rightValue": "=Hello, \n\nI wanted to follow up as it has been a little while since your last message. \n\nWould you still require any further assistance? I am happy to continue supporting you with any additional questions or concerns you may have. \n\nIf there is nothing else at the moment, please feel free to reach out whenever you need help in the future. \n\nThank you for your time.",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "ff93a80d-3092-4b0f-b148-c061ad5767e5",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.message }}",
+              "rightValue": "您好，我是客戶服務人員。",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "82c81f47-3a28-4968-bddd-66b48773e9e2",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.message }}",
+              "rightValue": "如果暫時沒有其他需求，歡迎隨時再找我們！",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "3e3346f2-0dc2-4d2b-b383-69e29e6c09f1",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.message }}",
+              "rightValue": "Thank you for joining us, hope forward to see you! 感謝你的參與，期望與你在活動相見。",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "56384542-c0ef-4376-a537-991ed72663c1",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.message }}",
+              "rightValue": "感謝您的回覆。英皇地產期待未來邀請您參加更多獨家活動，分享更多獨特體驗。如有任何問題或希望獲取最新活動資訊，請隨時聯繫我們。",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "55bab4c9-6fce-4ada-8d11-75d7c9eea34c",
+              "leftValue": "={{ $('Filter Sales & Check 15 mins intervals').item.json.type }}",
+              "rightValue": "user_message",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        480
+      ],
+      "id": "9abfe201-c2fe-4a7b-950c-b8177ca6290a",
+      "name": "if not system or timeout message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c23457ea-4133-47d6-98c9-e19d93d6d49a",
+              "leftValue": "={{ $('Code').item.json.source }}",
+              "rightValue": "WATI",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        880
+      ],
+      "id": "ec264483-b2ef-454d-ab95-3c2a9bddd835",
+      "name": "If WATI else WeChat"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -400,
+        208
+      ],
+      "id": "b1f1151c-42ad-42ea-b91e-1ba5426daaee",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.n8n_domain }}/webhook/central-msg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\":\"您好！請問是否還需要進一步的協助嗎 ? 如果您還有其他問題，我們很樂意繼續為您服務！ \\n\\n如果暫時沒有其他需求，歡迎隨時再找我們 !\",\n  \"channel\":\"WeChat\",\n  \"external_id\":\"{{ $('If WATI else WeChat').item.json.to }}\",\n  \"mobile_num\":\"{{ $('If WATI else WeChat').item.json.mobile_num }}\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        1152
+      ],
+      "id": "3529a027-f4aa-4aee-ae54-a2a8ddacc09f",
+      "name": "Central Message Pipeline",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\":\n  {\n    \"message\":\"{{ JSON.stringify($('Set Timeout Message').item.json.timeout_msg).slice(1, -1) }}\",\n    \"channel\":\"{{ $('Code').item.json.source }}\",\n    \"external_id\":\"{{ $('Code').item.json.to }}\",\n    \"mobile_num\":\"{{ $('Code').item.json.mobile_num }}\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        1152
+      ],
+      "id": "e8526b70-39cf-4893-9fbd-739b73bff60b",
+      "name": "Input Parm"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a32efab-c1d9-44fa-868a-018e31ed1150",
+              "name": "=timeout_msg",
+              "value": "=您好！請問是否還需要進一步的協助嗎 ? 如果您還有其他問題，我們很樂意繼續為您服務！ \n\n如果暫時沒有其他需求，歡迎隨時再找我們 !",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        1152
+      ],
+      "id": "bdebc144-6710-4916-b24a-bce7a600453b",
+      "name": "Set Timeout Message"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\":\n  {\n    \"channel\":\"{{ $('Code').item.json.source }}\",\n    \"external_id\":\"{{ $('Code').item.json.to }}\",\n    \"mobile_num\":\"{{ $('Code').item.json.mobile_num }}\",\n    \"on_off\": \"on\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        832
+      ],
+      "id": "44832dd0-a6ba-41fc-aa0e-1d5e29fae850",
+      "name": "Input Parm1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "M7hAgXMlCnDIuWWa",
+          "mode": "list",
+          "cachedResultName": "Central Message Pipeline"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        1152
+      ],
+      "id": "baa6ace9-d16d-49f4-8b12-ac093a0859c7",
+      "name": "Send msg pipeline"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Ao83XKq1xbKVTEqn",
+          "mode": "list",
+          "cachedResultName": "Turn AI mode ON/OFF operator v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        832
+      ],
+      "id": "21d00839-d03d-4ab1-a179-22bfc5631a64",
+      "name": "Turn On AI Mode"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Filter Sales & Check 15 mins intervals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send Chinese timeout msg by session msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send English timeout msg by session msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Sales & Check 15 mins intervals": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule 1 Hour Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send English timeout msg by session msg": {
+      "main": [
+        [
+          {
+            "node": "Input Parm1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Chinese timeout msg by session msg": {
+      "main": [
+        [
+          {
+            "node": "Input Parm1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many contacts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "if not system or timeout message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If WATI else WeChat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if not system or timeout message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If WATI else WeChat": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Timeout Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Central Message Pipeline": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Parm": {
+      "main": [
+        [
+          {
+            "node": "Send msg pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Timeout Message": {
+      "main": [
+        [
+          {
+            "node": "Input Parm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Parm1": {
+      "main": [
+        [
+          {
+            "node": "Turn On AI Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send msg pipeline": {
+      "main": [
+        [
+          {
+            "node": "Central Message Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn On AI Mode": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "2651bc5b-ea0d-4c5d-9927-1af6e193d718",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "rZAbJz7eEq65jgMT",
+  "tags": []
+}

@@ -1,0 +1,441 @@
+{
+  "name": "Turn AI mode ON/OFF operator v2",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=ai_bot_switch-{{ $('Lookup Conv. ID by Mobile & Channel1').item.json.conversationId }}",
+        "value": "={{ $('Standard Input').item.json.on_off }}",
+        "keyType": "string"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        240,
+        192
+      ],
+      "id": "5902580d-7afd-4cac-99dc-dd2158ee559b",
+      "name": "Set mode",
+      "credentials": {
+        "redis": {
+          "id": "iUORWQX1GuwmQDfh",
+          "name": "rds-redis-uat"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        -96
+      ],
+      "id": "5cd68471-6daa-48ab-babf-d1837870f1ec",
+      "name": "Manual turn on/off mode"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "whatsapp_messages",
+          "mode": "list",
+          "cachedResultName": "whatsapp_messages"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "mobile_num",
+              "value": "={{ $json.body.mobile_num }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        176,
+        -288
+      ],
+      "id": "2ee9bc53-968f-4f78-9cb4-f9eb4fec45d5",
+      "name": "Lookup Conv. ID by mobile number1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n\"body\": \n  {\n    \"on_off\": \"on\",\n    \"mobile_num\": \"85298743343\",\n    \"channel\": \"WATI\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        -96
+      ],
+      "id": "afe25015-e321-4912-b175-8ec1f202f285",
+      "name": "Set mobile number here"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0871e13a-5f30-47cf-b384-3b8980593523",
+              "leftValue": "={{ $('Standard Input').item.json.body[0].on_off }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        176
+      ],
+      "id": "851f9807-26db-4748-8523-00b449f06471",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7a4be7bc-df8d-41ed-8b36-972215ef9984",
+              "name": "on_off",
+              "value": "={{ $('Standard Input').item.json.on_off }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        112
+      ],
+      "id": "46bdccc7-83ae-4cb4-8ef1-039b61d14260",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "66f5eb64-a462-4865-9d64-5fc6a6270352",
+              "name": "on_off",
+              "value": "={{ $('Standard Input').item.json.body[0].on_off }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        272
+      ],
+      "id": "fd8741ad-e42c-4a4a-98a9-2fc6cb6fe207",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST"
+        ],
+        "path": "redis-on-off-v2",
+        "authentication": "basicAuth",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -832,
+        80
+      ],
+      "id": "7786cc6c-0286-4359-9910-c809e3fcedda",
+      "name": "Incoming payload",
+      "webhookId": "133e1dd1-255d-44ee-86a9-95f37972020d",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mYWitmcMYsHEobEy",
+          "name": "Portal Incoming Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select timestamp,\"conversationId\",source,* from whatsapp_messages \nwhere (mobile_num = '{{ $json.body.mobile_num }}' or mobile_num = '{{ $json.body[0].mobile_num }}') \nand source = '{{ $json.body.channel }}'\norder by timestamp desc\nlimit 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -176,
+        -96
+      ],
+      "id": "e3557422-f48c-42ae-8d52-c9bc20c31c31",
+      "name": "Lookup Conv. ID by Mobile & Channel",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select timestamp,\"conversationId\",source,* from whatsapp_messages \nwhere (mobile_num = '{{ $('Standard Input').item.json.mobile_num }}')\nand (source = '{{ $('Standard Input').item.json.channel }}')\norder by timestamp desc\nlimit 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -368,
+        176
+      ],
+      "id": "63d39c7f-b605-4100-a358-447d18296d08",
+      "name": "Lookup Conv. ID by Mobile & Channel1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=ai_bot_switch-{{ $json.conversationId }}",
+        "value": "={{ $('Set mobile number here').item.json.body.on_off }}",
+        "keyType": "string"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -96
+      ],
+      "id": "5f506b76-6117-4ae8-ac53-51cc973791c9",
+      "name": "Set mode1",
+      "credentials": {
+        "redis": {
+          "id": "iUORWQX1GuwmQDfh",
+          "name": "rds-redis-uat"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -832,
+        272
+      ],
+      "id": "86f3909b-4492-492a-a870-476b9bb66270",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -560,
+        176
+      ],
+      "id": "5dded979-e458-4c5a-b18c-c9ed420f98e4",
+      "name": "Standard Input"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual turn on/off mode": {
+      "main": [
+        [
+          {
+            "node": "Set mobile number here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Conv. ID by mobile number1": {
+      "main": [
+        []
+      ]
+    },
+    "Set mobile number here": {
+      "main": [
+        [
+          {
+            "node": "Lookup Conv. ID by Mobile & Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Set mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Set mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incoming payload": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Lookup Conv. ID by Mobile & Channel": {
+      "main": [
+        [
+          {
+            "node": "Set mode1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Conv. ID by Mobile & Channel1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard Input": {
+      "main": [
+        [
+          {
+            "node": "Lookup Conv. ID by Mobile & Channel1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "7c6209cb-f48a-47f6-b3b0-c15329150b75",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "Ao83XKq1xbKVTEqn",
+  "tags": []
+}

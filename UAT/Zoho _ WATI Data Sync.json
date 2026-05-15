@@ -1,0 +1,430 @@
+{
+  "name": "Zoho > WATI Data Sync",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        880
+      ],
+      "id": "1482d215-41e0-4625-bd72-fd43cffe5de1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.wati_api_domain }}/api/v1/updateContactAttributes/{{ $('Extract CRM Data').item.json.Mobile }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json-patch+json",
+        "body": "={\n  \"customParams\": [\n    {\n      \"name\": \"name\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Last_Name ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"property\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Purchased_Properties ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"email\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Email ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"env\",\n      \"value\": \"dev\"\n    },\n    {\n      \"name\": \"mem_num\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Membership_Number ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"pur_date\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Purchased_Date ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"amount\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Property_Amount ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"mem_start\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.field1 ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"mem_end\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.field3 ?? 'N/A' }}\"\n    },\n    {\n      \"name\": \"type\",\n      \"value\": \"{{ $('Extract CRM Data').item.json.Member_Tier2 ?? 'N/A' }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        688
+      ],
+      "id": "4bfe1e04-7883-446a-b4af-631e588d7d95",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Member_Tier2",
+            "Purchased_Properties",
+            "Purchased_Date",
+            "Membership_Number",
+            "field1",
+            "field3",
+            "Mobile",
+            "Last_Name",
+            "Email",
+            "First_Name",
+            "Date_of_Birth",
+            "Property_Amount",
+            "WATI_Sync_Timestamp"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        624
+      ],
+      "id": "f39c433d-6c9d-4a5b-8df4-49cb9824b2b2",
+      "name": "Extract CRM Data",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "data-sync",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        448
+      ],
+      "id": "5306c4df-77e7-41dd-b1d6-fc3cb80600b5",
+      "name": "Webhook",
+      "webhookId": "de8fd357-8b22-4d79-aab4-2a909dda2890"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        32,
+        512
+      ],
+      "id": "fe2c510d-3012-4b7a-b306-b2827ca5d375",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5842fd7e-ac0e-4483-bf9e-daa26dae5078",
+              "leftValue": "={{ $('Extract CRM Data').item.json.Mobile }}",
+              "rightValue": "852",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "1a8edee2-f117-4380-9678-6860b806116a",
+              "leftValue": "={{ $('Extract CRM Data').item.json.Mobile }}",
+              "rightValue": "={{ $('Standard Input').item.json.mobile }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        480
+      ],
+      "id": "35df4eeb-dea9-4f08-9fc1-51378920afd8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "hordcoded env, need switch!!",
+        "height": 220,
+        "width": 228,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        624
+      ],
+      "id": "79914412-c70c-42ba-a755-7b0852e50bc0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -480,
+        624
+      ],
+      "id": "f81b8e94-ce2a-4fa2-b31c-946f706d8626",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -320,
+        624
+      ],
+      "id": "f28f77d9-ec78-4ba8-909b-7c3e836e52ea",
+      "name": "Get Zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1040,
+        640
+      ],
+      "id": "8dc1c8fa-e21d-4e77-80ea-d4b43d5cdbcd",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        624
+      ],
+      "id": "53157a78-5fff-4b80-b13f-34855864c89e",
+      "name": "Standard Input"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n\"body\": \n  {\n    \"mobile\": \"85260335569\",\n    \"name\": \"Johnathan Tse\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -912,
+        816
+      ],
+      "id": "1b7c9610-a5af-4f34-8c8e-5d9077df9ee2",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract CRM Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get Zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Extract CRM Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "682a6e62-fdeb-4a87-9ab9-ad6970144818",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "szs8B3QxMk3m469Z",
+  "tags": []
+}

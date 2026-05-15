@@ -1,0 +1,628 @@
+{
+  "name": "Load Zoho Modules ID",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -64
+      ],
+      "id": "af95a141-33cf-40ba-92ce-45b35dfa2583",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Mobile",
+            "Last_Name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -48
+      ],
+      "id": "d70df78b-8a3d-4364-94d1-aaa69d7d6711",
+      "name": "Get many contacts",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_contact",
+          "mode": "list",
+          "cachedResultName": "zoho_contact"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mobile": "={{ $json.Mobile }}",
+            "contact_id": "={{ $json.id }}",
+            "name": "={{ $json.Last_Name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "mobile",
+              "displayName": "mobile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_id",
+              "displayName": "contact_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -336,
+        -48
+      ],
+      "id": "850ecb3d-e0f9-4f00-a7b5-0dcefe1a53cb",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_contact",
+          "mode": "list",
+          "cachedResultName": "zoho_contact"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -752,
+        -48
+      ],
+      "id": "d806f0c6-30b9-4d35-adf7-cfa0a89b8200",
+      "name": "Delete table or rows",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_campaign",
+          "mode": "list",
+          "cachedResultName": "zoho_campaign"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "campaign_id": "={{ $json.id }}",
+            "campaign_name": "={{ $json.Campaign_Name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "campaign_id",
+              "displayName": "campaign_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "campaign_name",
+              "displayName": "campaign_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -112,
+        -224
+      ],
+      "id": "9567c79d-6b36-4996-86e4-3b7765b5a7e8",
+      "name": "Insert rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_campaign",
+          "mode": "list",
+          "cachedResultName": "zoho_campaign"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -752,
+        -208
+      ],
+      "id": "98d4da92-6c21-466c-8397-16388c8e610c",
+      "name": "Delete table or rows1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Campaigns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        -224
+      ],
+      "id": "3e925802-3df1-4b8b-af40-2b09376d469e",
+      "name": "Get many campaigns"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得第一個輸入 item 的 json（你原本用 $input.first().json）\nconst input = $input.first().json;\n\n// data 可能在 input.data，或如果你是把 data 用 expression 傳入 items[0].json.data，則也是這裡\nconst dataArray = input.data || input; // 若 input 本身就是 data 陣列，容錯處理\n\nif (!Array.isArray(dataArray)) {\n  // 若沒有陣列，回傳空陣列避免流程中斷\n  return [];\n}\n\nconst output = dataArray.map(rec => ({\n  json: {\n    id: rec.id || null,\n    Campaign_Name: rec.Campaign_Name || rec.Camiaign_Name || null,\n  }\n}));\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        -224
+      ],
+      "id": "8781120e-46f6-4331-904a-7d913533f629",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Benefit_Items",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -576,
+        112
+      ],
+      "id": "e7ff4a3a-58eb-41c2-9469-ca422c03a946",
+      "name": "Get entitlement items"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1184,
+        -64
+      ],
+      "id": "672eefeb-350a-4a7a-9416-b68ea1763191",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -992,
+        -64
+      ],
+      "id": "7f173de7-b98e-4a8e-bd08-721144a44513",
+      "name": "Get zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_entitlements",
+          "mode": "list",
+          "cachedResultName": "zoho_entitlements"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -752,
+        112
+      ],
+      "id": "5422bf5c-4dba-4af0-b604-42abc2cee64a",
+      "name": "Delete table or rows2",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得第一個輸入 item 的 json\nconst input = $input.first().json;\n\n// 支援兩種情況：1) input.data 為陣列（整個物件傳入） 2) input 本身就是 data 陣列\nconst dataArray = Array.isArray(input.data) ? input.data : (Array.isArray(input) ? input : (Array.isArray(input) ? input : input.data || input));\n\nif (!Array.isArray(dataArray)) {\n  // 若非陣列則回傳空陣列，避免流程中斷\n  return [];\n}\n\nconst output = dataArray.map(rec => {\n  return {\n    json: {\n      Name: rec.Name || null,\n      id: rec.id || null,\n      TierLabel_name: (rec.TierLabel && rec.TierLabel.name) ? rec.TierLabel.name : null,\n    }\n  };\n});\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        112
+      ],
+      "id": "94f1e577-c275-4e48-8996-ca6909821000",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_entitlements",
+          "mode": "list",
+          "cachedResultName": "zoho_entitlements"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "entitlement": "={{ $json.Name }}",
+            "entitlement_id": "={{ $json.id }}",
+            "tier": "={{ $json.TierLabel_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "entitlement",
+              "displayName": "entitlement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entitlement_id",
+              "displayName": "entitlement_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tier",
+              "displayName": "tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -144,
+        112
+      ],
+      "id": "15c0c8d6-537e-4e98-a1f9-d9c4c3411ba4",
+      "name": "Insert rows in a table2",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many contacts": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows1": {
+      "main": [
+        [
+          {
+            "node": "Get many campaigns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many campaigns": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Delete table or rows1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows2": {
+      "main": [
+        [
+          {
+            "node": "Get entitlement items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get entitlement items": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b1c1fcca-22b5-4d60-9af0-8ef3e3c09956",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "4CuZwImGNL8u4buv",
+  "tags": []
+}

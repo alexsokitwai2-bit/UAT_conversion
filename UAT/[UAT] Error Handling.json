@@ -1,0 +1,65 @@
+{
+  "name": "[UAT] Error Handling",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -96
+      ],
+      "id": "4159903b-00cd-414c-af3f-a57125e60700",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "fromEmail": "dso-n8n-uat@emperorgroup.com",
+        "toEmail": "it-devsecops@emperorgroup.com",
+        "subject": "=[UAT] n8n workflow error: {{ $('Error Trigger').item.json.workflow.name }}",
+        "html": "=Workflow: {{ $json.workflow.name }}\n</br></br>\nExecution: {{ $json.execution.url }}\n</br></br>\n</br></br>\nDetails:\n</br></br>\n{{ JSON.stringify($json, null, 4).replaceAll(\"\\n\", \"</br>\").replaceAll(\" \", \"&nbsp;\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        -96
+      ],
+      "id": "8ae8c801-4764-48f6-b867-54115b819613",
+      "name": "Send Email",
+      "webhookId": "3a152306-d56f-4cc0-a907-8f23c7cd0ed5",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c83ce3ed-eb61-4d86-a204-484a9deb6c65",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "Bd7wEK5rKd6CqgGk",
+  "tags": []
+}

@@ -1,0 +1,584 @@
+{
+  "name": "send to closed chatroom customer",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        128
+      ],
+      "id": "02b2ba3d-1a1b-48dd-8b78-64a560d0dd4f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c23457ea-4133-47d6-98c9-e19d93d6d49a",
+              "leftValue": "={{ $('Standard').item.json.source }}",
+              "rightValue": "WATI",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        384
+      ],
+      "id": "e8362798-37fd-45c1-a005-ee9d938dfb24",
+      "name": "If WATI else WeChat"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\":\n  {\n    \"message\":\"{{ JSON.stringify($('Set Message').item.json.timeout_msg).slice(1, -1) }}\",\n    \"channel\":\"{{ $('Standard').item.json.source }}\",\n    \"mobile_num\":\"{{ $('Standard').item.json.mobile }}\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        496
+      ],
+      "id": "b6993f3c-3eb8-4523-97ad-21c65a5c837f",
+      "name": "Input Parm"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\":\n  {\n    \"channel\":\"{{ $('Standard').item.json.source }}\",\n    \"mobile_num\":\"{{ $('Standard').item.json.mobile }}\",\n    \"on_off\": \"on\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        304
+      ],
+      "id": "750a1bab-d4cf-4d17-9d46-3dd4653b3cdb",
+      "name": "Input Parm1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "M7hAgXMlCnDIuWWa",
+          "mode": "list",
+          "cachedResultName": "Central Message Pipeline"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        496
+      ],
+      "id": "46e8648b-8659-4454-bd4e-f6305d58be65",
+      "name": "Send msg pipeline"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Ao83XKq1xbKVTEqn",
+          "mode": "list",
+          "cachedResultName": "Turn AI mode ON/OFF operator v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "8f4f8681-fee2-495e-add9-66d081ed6d2c",
+      "name": "Turn On AI Mode"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tpl-to-cust",
+        "authentication": "basicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        384
+      ],
+      "id": "bd042d1a-e3c0-4a19-ad38-a21957937c79",
+      "name": "Webhook",
+      "webhookId": "396f5e69-b1e3-4224-82ee-a91eafa376c0",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mYWitmcMYsHEobEy",
+          "name": "Portal Incoming Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{$json.body}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        384
+      ],
+      "id": "a3f9da03-9439-4e95-a5a4-d5e55b25bb74",
+      "name": "Standard"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -320,
+        384
+      ],
+      "id": "391e8e6b-219d-47ff-a1c9-25884085b0d4",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3fce1d99-050a-4435-a99d-f0ac0847e2d6",
+              "leftValue": "={{ $('Standard').item.json.img_URL }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        224
+      ],
+      "id": "6d756f0d-2a35-417c-a3c2-7a3126464504",
+      "name": "If empty image"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\":\n  {\n    \"channel\":\"{{ $('Standard').item.json.source }}\",\n    \"mobile_num\":\"{{ $('Standard').item.json.mobile }}\",\n    \"on_off\": \"on\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        144
+      ],
+      "id": "ab25d5f7-dd19-4937-a965-0a4c49b2977a",
+      "name": "Input Parm2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Ao83XKq1xbKVTEqn",
+          "mode": "list",
+          "cachedResultName": "Turn AI mode ON/OFF operator v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        144
+      ],
+      "id": "1fd94937-6a5a-4007-b120-f2468feae86c",
+      "name": "Turn On AI Mode1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendTemplateMessage?whatsappNumber={{ $('Standard').item.json.mobile }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_name\": \"txt_tpl\",\n  \"broadcast_name\": \"Test POC\",\n  \"parameters\": [\n    {\n      \"Name\": \"body\",\n      \"Value\": \"{{$('Standard').item.json.msg}}\"\n    }\n  ],\n  \"channel_number\": \"85290556233\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        144
+      ],
+      "id": "6403ec9e-f20e-4fa5-9b48-62773e9c38e1",
+      "name": "Send template msg1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"body\":\n  {\n    \"mobile\": \"85298743343\",\n    \"msg\": \"hi expired chat from n8n\",\n    \"source\":\"WATI\",\n    \"image_URL\":\"https://eihl-crm-storage.oss-cn-hongkong.aliyuncs.com/85298743343_Johnathan%20Tse/b9a0ddb1-5a5b-43dc-b3a6-67b8427cd6f5.jpg?Expires=1778222002&OSSAccessKeyId=TMP.3Ku45UqZJD2VqSqK9u4WZr7qmMD5hsPEm9e4LiGkWRGW6jzmjQjkWwBFgCZjq9H2q2u4utGgBTHf2Nz6zDYoRCgBpjMwbG&Signature=TJsojjIPuSoef9S8DV%2BgTGIn1Do%3D\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        -48
+      ],
+      "id": "2f97068a-e5f9-44ec-b88d-ee297792de79",
+      "name": "set input parm (with img)"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"body\":\n  {\n    \"mobile\": \"85298743343\",\n    \"msg\": \"hi expired chat from n8n\",\n    \"source\": \"WATI\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        128
+      ],
+      "id": "f1a8ffd7-a979-4456-a327-eb0a33c860ea",
+      "name": "set input parm (no img)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a32efab-c1d9-44fa-868a-018e31ed1150",
+              "name": "=msg",
+              "value": "={{ $('Standard').item.json.msg }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        496
+      ],
+      "id": "24eeea5f-461d-4807-8efb-8510ea65ebd4",
+      "name": "Set Message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendTemplateMessage?whatsappNumber={{ $('Standard').item.json.mobile }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $('Get API endpoints').item.json.wati_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_name\": \"expired_cust_tpl\",\n  \"broadcast_name\": \"Test POC\",\n  \"parameters\": [\n    {\n      \"Name\": \"body\",\n      \"Value\": \"{{$('Standard').item.json.msg}}\"\n    },\n    {\n      \"Name\": \"image_url\",\n      \"Value\": \"{{$('Standard').item.json.img_URL}}\"\n    }\n  ],\n  \"channel_number\": \"85290556233\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        304
+      ],
+      "id": "11f4663e-084e-4fed-9df0-0830dfb3040e",
+      "name": "Send template msg with img"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If WATI else WeChat": {
+      "main": [
+        [
+          {
+            "node": "If empty image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Parm": {
+      "main": [
+        [
+          {
+            "node": "Send msg pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Parm1": {
+      "main": [
+        [
+          {
+            "node": "Turn On AI Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send msg pipeline": {
+      "main": [
+        []
+      ]
+    },
+    "Turn On AI Mode": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "set input parm (no img)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "If WATI else WeChat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If empty image": {
+      "main": [
+        [
+          {
+            "node": "Send template msg1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send template msg with img",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Parm2": {
+      "main": [
+        [
+          {
+            "node": "Turn On AI Mode1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send template msg1": {
+      "main": [
+        [
+          {
+            "node": "Input Parm2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set input parm (no img)": {
+      "main": [
+        [
+          {
+            "node": "Standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Message": {
+      "main": [
+        [
+          {
+            "node": "Input Parm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send template msg with img": {
+      "main": [
+        [
+          {
+            "node": "Input Parm1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "88af02bc-fb30-4c36-99d6-9663ab380441",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "ZdwCkXVEvhMBOvLS",
+  "tags": []
+}

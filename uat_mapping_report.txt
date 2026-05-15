@@ -1,0 +1,181 @@
+credential entries:
+15mins follow up message.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+15mins follow up message.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+15mins follow up message.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Assign CRM Tasks.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Assign CRM Tasks.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Assign CRM Tasks.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Assign CRM Tasks.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Assign CRM Tasks.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Daily CRM Task Online Scheduler.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Daily CRM Task Online Scheduler.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+[UAT] Daily Sales Phone Online Email Scheduler.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Daily Sales Phone Online Email Scheduler.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+[UAT] Error Handling.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+[UAT] Leads Map Contact View Automation.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Leads Map Contact View Automation.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Recall Zoho API Token.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Recall Zoho API Token.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Recall Zoho API Token.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Template Message Webhook.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Template Message Webhook.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "IWrwVx5slT5ZvY5Q", "name": "EAS-QwQ-32B"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "d8WzG2fbrDJOiMua", "name": "Postgres account 2"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"ollamaApi": {"id": "UP4cGZapz3Gde5aJ", "name": "Ollama account"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "JkkvTVOVifxXlEIk", "name": "BaiLian LLM"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"redis": {"id": "iUORWQX1GuwmQDfh", "name": "rds-redis-uat"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"redis": {"id": "iUORWQX1GuwmQDfh", "name": "rds-redis-uat"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"redis": {"id": "iUORWQX1GuwmQDfh", "name": "rds-redis-uat"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "azXuvmhPtKVGDuRa", "name": "OpenAi account"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "siM0YOF4nBlvqFif", "name": "EAS-QwQ-32B-AWQ"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "liw3QpXpE9Yv0wY6", "name": "QwQ-32B-AWQ-H20"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "w3kPux4oaomNOhL2", "name": "QwQ-32B-H20"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "IWrwVx5slT5ZvY5Q", "name": "EAS-QwQ-32B"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "a6lax382yGh0yOlW", "name": "gpt-oss-20b"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "sLr60l7glnelZ13U", "name": "Qwen3-32B"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "SN7aWCRTwNx10jUt", "name": "Qwen3-14B"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "ALxU1roEA0fmdvD1", "name": "Qwen3-8B"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "JkkvTVOVifxXlEIk", "name": "BaiLian LLM"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "JkkvTVOVifxXlEIk", "name": "BaiLian LLM"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "DpzVBl6XYtef5RYz", "name": "gpt-oss-20b-gu30"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "exBzlgwOmjUzeerz", "name": "gpt-oss-20b-gu60"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"openAiApi": {"id": "3YjT59ndtBLMgKfg", "name": "gpt-oss-20b-gu60x2"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+[UAT]Central Message Pipeline.json: {"httpBasicAuth": {"id": "QxxEoKqsZY22iyJv", "name": "wechat proxy basic auth"}}
+[UAT]Central Message Pipeline.json: {"httpBasicAuth": {"id": "mYWitmcMYsHEobEy", "name": "Portal Incoming Auth"}}
+[UAT]Central Message Pipeline.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT]Daily no PIC Alert Email (For Internal CS).json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+[UAT]Daily no PIC Alert Email (For Internal CS).json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT]Daily no PIC Alert Email (For Internal CS).json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+[UAT]Portal to CS Msg Pipeline.json: {"httpBasicAuth": {"id": "mYWitmcMYsHEobEy", "name": "Portal Incoming Auth"}}
+[UAT]Portal to CS Msg Pipeline.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT]Portal to CS Msg Pipeline.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT]Portal to CS Msg Pipeline.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+[UAT]Portal to WATI campaign call.json: {"httpBasicAuth": {"id": "mYWitmcMYsHEobEy", "name": "Portal Incoming Auth"}}
+[UAT]Portal to WATI campaign call.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+[UAT]Portal to WATI campaign call.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+CRM add entitlements v3.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+CRM add entitlements v3.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+CRM add entitlements v3.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+CRM add entitlements v3.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+CRM add entitlements v3.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+CRM add entitlements v3.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Customer Email Workflow Master.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Customer Email Workflow Master.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+Customer Email Workflow Master.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Customer Email Workflow Master.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+Customer Email Workflow Master.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Customer Email Workflow Master.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+Customer Email Workflow Master.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Customer Email Workflow Master.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Customer Email Workflow Master.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+Customer Email Workflow Master.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+Lead Modules.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Lead Modules.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Lead Modules.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Lead Modules.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Lead Modules.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Load Zoho Modules ID.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+OSS Bucket POC.json: {"s3": {"id": "uzMQcw93nGCOhEZE", "name": "AliYun OSS credential"}}
+OSS Bucket POC.json: {"s3": {"id": "uzMQcw93nGCOhEZE", "name": "AliYun OSS credential"}}
+OSS Bucket POC.json: {"s3": {"id": "uzMQcw93nGCOhEZE", "name": "AliYun OSS credential"}}
+OSS Bucket POC.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+OSS Bucket POC.json: {"postgres": {"id": "d8WzG2fbrDJOiMua", "name": "Postgres account 2"}}
+Pass2U Virutal Membership Card.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Pass2U Virutal Membership Card.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Pass2U Virutal Membership Card.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+send to closed chatroom customer.json: {"httpBasicAuth": {"id": "mYWitmcMYsHEobEy", "name": "Portal Incoming Auth"}}
+send to closed chatroom customer.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Turn AI mode ON_OFF operator v2.json: {"redis": {"id": "iUORWQX1GuwmQDfh", "name": "rds-redis-uat"}}
+Turn AI mode ON_OFF operator v2.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Turn AI mode ON_OFF operator v2.json: {"httpBasicAuth": {"id": "mYWitmcMYsHEobEy", "name": "Portal Incoming Auth"}}
+Turn AI mode ON_OFF operator v2.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Turn AI mode ON_OFF operator v2.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Turn AI mode ON_OFF operator v2.json: {"redis": {"id": "iUORWQX1GuwmQDfh", "name": "rds-redis-uat"}}
+Zoho _ WATI Add New Profile.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Zoho _ WATI Add New Profile.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho _ WATI Data Sync.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Zoho _ WATI Data Sync.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho _ WATI Data Sync.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho Campaign Workflow.json: {"smtp": {"id": "vVkRUUFgjNO8UXJJ", "name": "smtp1"}}
+Zoho Campaign Workflow.json: {"httpBasicAuth": {"id": "mYWitmcMYsHEobEy", "name": "Portal Incoming Auth"}}
+Zoho Campaign Workflow.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho Campaign Workflow.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho Campaign Workflow.json: {"zohoOAuth2Api": {"id": "GVUtg09pbovbNsot", "name": "Zoho Sandbox Account"}}
+Zoho Campaign Workflow.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho Campaign Workflow.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+Zoho Campaign Workflow.json: {"postgres": {"id": "cj1RzUB8nTNEHJpu", "name": "Postgres-UAT-n8n-admin"}}
+
+webhook ids:
+[UAT] Assign CRM Tasks.json: 0a3a8c24-dd5f-42b8-9e89-f38ebc53ddc2
+[UAT] Daily CRM Task Online Scheduler.json: a7b43c47-2b70-411f-82a4-9eaeb10764a6
+[UAT] Daily Sales Phone Online Email Scheduler.json: b3f36b98-c921-4533-8e6a-dc35d41c7476
+[UAT] Error Handling.json: 3a152306-d56f-4cc0-a907-8f23c7cd0ed5
+[UAT] Template Message Webhook.json: a91f111e-8c85-447d-8bba-0f9bab7a3ffa
+[UAT] Template Message Webhook.json: a91f111e-8c85-447d-8bba-0f9bab7a3ffa
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: 069a2050-9cc2-4352-8bef-58fbfeb4ccc4
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: 2dbaff36-acf2-4652-9e0e-ffde7f33c252
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: b08b22ff-4df0-46b8-a04a-ef93456e7246
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: b610f671-0635-444d-aed0-1a85e09f30cd
+[UAT]Central Message Pipeline.json: f6c27b58-2d45-4e36-8950-cd0f5bb687cc
+[UAT]Daily no PIC Alert Email (For Internal CS).json: a7b43c47-2b70-411f-82a4-9eaeb10764a6
+[UAT]Portal to CS Msg Pipeline.json: 65533274-d8ab-45ea-88e4-8cb94f5a5501
+[UAT]Portal to CS Msg Pipeline.json: b610f671-0635-444d-aed0-1a85e09f30cd
+[UAT]Portal to WATI campaign call.json: f32b1f28-bf50-4570-82f4-6fd18a0754dd
+Customer Email Workflow Master.json: 7dd2dc2c-d225-4647-a15c-805fe7fc2ec3
+Customer Email Workflow Master.json: 7dd2dc2c-d225-4647-a15c-805fe7fc2ec3
+Customer Email Workflow Master.json: 7dd2dc2c-d225-4647-a15c-805fe7fc2ec3
+Customer Email Workflow Master.json: 7dd2dc2c-d225-4647-a15c-805fe7fc2ec3
+Customer Email Workflow Master.json: 7dd2dc2c-d225-4647-a15c-805fe7fc2ec3
+Lead Modules.json: 64fcd9bf-b5e7-41e0-9e59-96c706187f49
+Pass2U Virutal Membership Card.json: 25d5b122-665c-4ba7-ac93-96487a788338
+send to closed chatroom customer.json: 396f5e69-b1e3-4224-82ee-a91eafa376c0
+Turn AI mode ON_OFF operator v2.json: 133e1dd1-255d-44ee-86a9-95f37972020d
+Zoho _ WATI Add New Profile.json: c95b88ac-3c47-4076-a2b3-5f7331fa08ad
+Zoho _ WATI Data Sync.json: de8fd357-8b22-4d79-aab4-2a909dda2890
+Zoho Campaign Workflow.json: b1266aed-50df-4b62-8e6a-a5f67eb0a3b8
+Zoho Campaign Workflow.json: c9229f6a-b872-4d31-8a5a-e920c59622f9
+
+paths:
+[UAT] Assign CRM Tasks.json: crm_task
+[UAT] Template Message Webhook.json: template-msg-in
+[UAT] Template Message Webhook.json: zoho-uat
+[UAT] Wati-PSQL-pipeline-v7-20250731.json: whatsapp-in-uat-v2
+[UAT]Central Message Pipeline.json: central-msg
+[UAT]Portal to CS Msg Pipeline.json: msg-to-cs
+[UAT]Portal to WATI campaign call.json: wati_campaign_call
+Lead Modules.json: lead
+Pass2U Virutal Membership Card.json: vcard-issue
+send to closed chatroom customer.json: tpl-to-cust
+Turn AI mode ON_OFF operator v2.json: redis-on-off-v2
+Zoho _ WATI Add New Profile.json: data-add
+Zoho _ WATI Data Sync.json: data-sync
+Zoho Campaign Workflow.json: campaign-flow

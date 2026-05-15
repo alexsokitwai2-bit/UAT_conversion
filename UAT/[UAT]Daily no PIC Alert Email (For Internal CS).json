@@ -1,0 +1,355 @@
+{
+  "name": "Daily no PIC Alert Email (For Internal CS)",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "BU_Product",
+            "Lead_UID",
+            "Full_Name",
+            "Lead_Status",
+            "PIC",
+            "AI_Latest_Summary"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        144
+      ],
+      "id": "7d6d5c7b-c9c2-48a2-b787-f43ae66e8dfb",
+      "name": "Get many leads",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        144
+      ],
+      "id": "509402a6-b0ea-4d3a-b65f-9bbfd8bcbc44",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data;\n\nconst filteredLeads = leads.filter(lead => lead.PIC === null && lead.AI_Latest_Summary !== null);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        144
+      ],
+      "id": "b6a4aa44-0d46-40ff-a130-6df3ae7b9110",
+      "name": "Get no PIC record",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "=https://www.zohoapis.com/crm/v2/leads/{{$('Get no PIC record').item.json.id}}/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        144
+      ],
+      "id": "254ee79e-3124-4680-a403-4812b4752ca5",
+      "name": "Add bot msg to Contact Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -880,
+        144
+      ],
+      "id": "45bddcda-37ed-4937-ad17-4e3056557f26",
+      "name": "Zoho Token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "eihl-crm@emperorgroup.com",
+        "toEmail": "johnathantsecl@emperorgroup.com,karmenwong@emperorgroup.com,andreali@emperorgroup.com,raysuen@emperorgroup.com",
+        "subject": "[EIHL-CRM-UAT] Unhandled Leads Follow Up Alert",
+        "html": "={{ $json.htmlTable }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        144
+      ],
+      "id": "d05c3536-03db-4221-8e0a-e70182190967",
+      "name": "Send email",
+      "webhookId": "a7b43c47-2b70-411f-82a4-9eaeb10764a6",
+      "credentials": {
+        "smtp": {
+          "id": "vVkRUUFgjNO8UXJJ",
+          "name": "smtp1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const filteredLeads = $('Aggregate').first().json.data.filter(lead => lead.PIC === null && lead.AI_Latest_Summary !== null);\n\n\n\nconst leads = filteredLeads.map(item => {\n    return {\n        Lead_UID: item.Lead_UID,\n        Full_Name: item.Full_Name,\n        BU_Product: item.BU_Product,\n        URL: \"https://crm.zoho.com/crm/org884317707/tab/Leads/\" + item.id,\n        Summary: item.AI_Latest_Summary, // 假設這是已經獲取的\n    };\n});\n\n// 建立 HTML 表格\nlet html = `\n<style>\n    body {\n        font-family: Arial, sans-serif;\n        margin: 20px;\n        padding: 20px;\n        background-color: #f4f4f4;\n    }\n    table {\n        width: 100%;\n        border-collapse: collapse;\n        margin: 20px 0;\n        background-color: #fff;\n        border: 2px solid #000;\n        table-layout: fixed; /* 關鍵：讓寬度分配更穩定 */\n    }\n    th, td {\n        border: 1px solid #000;\n        padding: 8px;\n        text-align: left;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap; /* 避免URL爆寬 */\n    }\n    th {\n        background-color: #007BFF;\n        color: white;\n    }\n    tr:hover {\n        background-color: #f1f1f1;\n    }\n\n    /* --- 調整欄位寬度 --- */\n    th.ticket-url, td.ticket-url {\n        width: 180px;      /* 你可改小/改大 */\n        max-width: 180px;\n        word-break: break-word;\n        white-space: nowrap;\n    }\n\n    th.summary, td.summary {\n        width: auto;       /* 讓 Summary 吃剩餘 */\n    }\n</style>\n\n<table>\n    <thead>\n        <tr>\n            <th>Leads UID</th>\n            <th>Leads Name</th>\n            <th>BU Product</th>\n            <th>Leads Summary</th>\n            <th>Leads Ticket URL</th>\n        </tr>\n    </thead>\n    <tbody>`;\n\nleads.forEach(lead => {\n    html += `\n        <tr>\n            <td>${lead.Lead_UID}</td>\n            <td>${lead.Full_Name}</td>\n            <td>${lead.BU_Product}</td>\n            <td>${lead.Summary}</td>\n            <td>${lead.URL}</td>\n        </tr>`;\n});\n\nhtml += `\n    </tbody>\n</table>`;\n\nreturn [{ json: { htmlTable: html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        144
+      ],
+      "id": "b17d313a-ca91-4c50-95c7-0f77be27ec15",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "TODO: add note content of null PIC",
+        "height": 336,
+        "width": 552,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        32
+      ],
+      "id": "e18f25d0-37f4-472e-9647-d10fb7c194ff",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "439b6e05-fb95-4cb2-b02b-6990ad4cfecf",
+              "leftValue": "={{$('Get no PIC record').item}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "63c336cc-84b3-4435-9088-8a61d10e6ffb",
+      "name": "If obj not empty",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        144
+      ],
+      "id": "2646597c-3cdd-4e88-9d17-72d6262a4111",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "ALERT: US Time Zone",
+        "height": 224,
+        "width": 248,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        80
+      ],
+      "id": "f4ddee64-1ec9-4f2a-82ea-413be214682f",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many leads": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Get no PIC record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get no PIC record": {
+      "main": [
+        [
+          {
+            "node": "If obj not empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Token": {
+      "main": [
+        [
+          {
+            "node": "Get many leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add bot msg to Contact Note": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If obj not empty": {
+      "main": [
+        [
+          {
+            "node": "Add bot msg to Contact Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Zoho Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "5d90a846-2819-44d6-9e40-2aca7e1a562b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "lCYOBtywIIoBIiSI",
+  "tags": []
+}

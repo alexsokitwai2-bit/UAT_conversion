@@ -1,0 +1,2435 @@
+{
+  "name": "[UAT] Template Message Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "template-msg-in",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        912
+      ],
+      "id": "0f7e43d8-3c0b-413d-9c01-9a3b9dec0d6f",
+      "name": "Webhook",
+      "webhookId": "a91f111e-8c85-447d-8bba-0f9bab7a3ffa"
+    },
+    {
+      "parameters": {
+        "content": "Handle event trigger",
+        "height": 276,
+        "width": 760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        832
+      ],
+      "id": "9ea202ba-e0b4-46e0-80d7-96ba6203f8c6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "925833c2-1d4b-4753-92cb-1de4a728e688",
+              "leftValue": "={{ $('Webhook').item.json.body.type }}",
+              "rightValue": "button",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "bcd442a7-7a30-454d-90e0-b795d7c24637",
+              "leftValue": "={{ $('Webhook').item.json.body.buttonReply  }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1824,
+        896
+      ],
+      "id": "5812b646-59f3-46ff-a983-fcc09740b06e",
+      "name": "If button response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b96865e7-ef8b-4ea5-afdb-806de0578791",
+              "leftValue": "={{ $('Webhook').item.json.body.eventType }}",
+              "rightValue": "templateMessageSent_v2",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c909b951-b72f-474f-a2e2-d6359d24506b",
+              "leftValue": "={{ $('Webhook').item.json.body.templateName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1824,
+        1072
+      ],
+      "id": "c3c48f7e-3bd9-462e-aeeb-ce0a3b3539ec",
+      "name": "Template message >> invitation"
+    },
+    {
+      "parameters": {
+        "content": "From WATI map data to Zoho",
+        "height": 600,
+        "width": 1284
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        672
+      ],
+      "id": "f02a0c0a-66c8-4cc8-b29e-a58788d869a9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee49003d-dc71-4c79-a31f-d64abe6171ef",
+              "name": "token",
+              "value": "={{ $('Get Zoho access token').item.json.token }}",
+              "type": "string"
+            },
+            {
+              "id": "85ab8a2d-bbbb-419a-8bf9-b98800242dc0",
+              "name": "contact_id",
+              "value": "={{ $('get zoho profile data').item.json.contact_id }}",
+              "type": "string"
+            },
+            {
+              "id": "73c92411-60f3-4402-8a0e-703afe2108e6",
+              "name": "campaign_id",
+              "value": "={{ $('Get Campaign ID').item.json.campaign_id }}",
+              "type": "string"
+            },
+            {
+              "id": "c55a2897-b091-4702-86c8-c7cfec64462a",
+              "name": "mobile",
+              "value": "={{ $('Webhook').item.json.body.waId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        1024
+      ],
+      "id": "6e2929c5-acef-4347-8718-0fd1ab953230",
+      "name": "Set attributes"
+    },
+    {
+      "parameters": {
+        "content": "Warning",
+        "height": 204,
+        "width": 166,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        880
+      ],
+      "id": "cdf00ca4-c2a6-4692-b195-f4a3ccfc8da9",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1184,
+        768
+      ],
+      "id": "941d477d-c8e0-4813-b9df-6ea8050805ba",
+      "name": "Get Zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Enhance to update Zoho CRM Lead Record Status",
+        "height": 612,
+        "width": 1284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1776
+      ],
+      "id": "ab7939c0-e613-4caf-bdd7-6bc343a93419",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "Warning",
+        "height": 220,
+        "width": 180,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        768,
+        880
+      ],
+      "id": "7b719287-d706-46c1-9644-68663e474454",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bed02d1-50db-4d10-8a34-bd2282100d63",
+              "name": "get_task_id",
+              "value": "={{  $('Webhook').item.json.body.text.split(\":\")[0]  }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        1824
+      ],
+      "id": "906f7cf2-d4d7-4829-b086-847dc80667f3",
+      "name": "Get Task ID",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        816,
+        1328
+      ],
+      "id": "c75408b5-a76c-4e68-8ea8-2af0c2d2bc2e",
+      "name": "Zoho Token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "BU_Product",
+            "Lead_UID",
+            "Full_Name",
+            "Lead_Status",
+            "PIC"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        1824
+      ],
+      "id": "d5a714f6-4e93-4bc6-8306-75a839d1c84a",
+      "name": "Get many leads",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        1824
+      ],
+      "id": "7ebd2087-070e-4ff4-a04d-d8a89c48b661",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data;\nconst leadUID = $('Get Task ID').first().json.get_task_id; \n\nconst filteredLeads = leads.filter(lead => lead.Lead_UID === leadUID);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        2064
+      ],
+      "id": "adde4460-2d14-4e42-b272-603284d0526e",
+      "name": "Get Lead ID by Lead_UID"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80ba9214-7224-4a97-bdd0-63759dc94a6a",
+              "leftValue": "={{  $('Webhook').item.json.body.type  }}",
+              "rightValue": "button",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "3431addf-661f-4ac7-8476-6c7ca76254bd",
+              "leftValue": "={{  $('Webhook').item.json.body.buttonReply }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "67074106-d6a1-43f3-96e3-fba6a3f2eee5",
+              "leftValue": "={{  $('Webhook').item.json.body.templateName  }}",
+              "rightValue": "={{  $('Hardcode field').item.json.tpl_name  }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        928
+      ],
+      "id": "195503a2-3b67-4198-8e4f-e264838a8cd9",
+      "name": "Check if event message or not"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "94a95c4a-dfad-4cca-9b63-593bba236dfa",
+              "leftValue": "={{  $('Webhook').item.json.body.text  }}",
+              "rightValue": "Follow Up",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "aaad2bd5-1398-48db-bf77-4fa664aed060",
+              "leftValue": "={{  $('Webhook').item.json.body.interactiveButtonReply  }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        1840
+      ],
+      "id": "effb2cf6-4a8d-491e-a1c2-cee2ec758745",
+      "name": "Check Button Reply or Not"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0f3f7636-afbe-48c2-b978-fe9846f067b0",
+              "leftValue": "={{ $('Get Lead ID by Lead_UID').item.json.PIC }}",
+              "rightValue": "={{ $('Webhook').item.json.body.senderName }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1904,
+        2224
+      ],
+      "id": "0441c6f6-15f4-46a7-9ef8-421a0638dffc",
+      "name": "If PIC exists, check he is the right PIC or not"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendSessionMessage/{{ $('Webhook').item.json.body.waId }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "messageText",
+              "value": "=This CRM record has been followed by others!"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2128,
+        2240
+      ],
+      "id": "f8d2974e-c656-4d89-b12f-244aa054af15",
+      "name": "He is not the PIC"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://live-mt-server.wati.io/431426/api/v1/sendInteractiveButtonsMessage?whatsappNumber={{ $('Webhook').item.json.body.waId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"header\": {\n    \"type\": \"Text\",\n    \"text\": \"{{ $('Get Task ID').item.json.get_task_id }} - Assigned To You!\"\n  },\n  \"body\": \"\\nCongratulations! Lead Record **{{ $('Get Task ID').item.json.get_task_id }}** has been assigned to you, your follow up timestamp is {{ $('Now()').item.json.currentDateTime }}. \\n\\nPlease click **COMPLETE button** when you finish dealing with customer.\",\n  \"footer\": \"By Emperor Properties\",\n  \"buttons\": [\n    {\n      \"text\": \"{{ $('Get Task ID').item.json.get_task_id }}: COMPLETE\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2112,
+        2048
+      ],
+      "id": "8c2ec8cd-9ead-4b16-abd3-2fd82fb5e036",
+      "name": "Send Msg to Assigned PIC"
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "zoho-uat",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        224,
+        352
+      ],
+      "id": "6ef3b275-ca8f-45fb-b8cb-a68fb512d236",
+      "name": "Webhook1",
+      "webhookId": "a91f111e-8c85-447d-8bba-0f9bab7a3ffa"
+    },
+    {
+      "parameters": {
+        "content": "One off manual action (should not recur)",
+        "height": 320,
+        "width": 568,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        272
+      ],
+      "id": "d45fa8bf-6a70-439f-a7d5-b5174b246feb",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.zohoapis.com/crm/v2/Campaigns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken 1000.a64e519635c8f53576ce175c2f9c7b4c.627f94465efdc01313df7eaa48f1486e"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    {\n      \"Campaign_Name\": \"{{ $json.body.templateName }}\",\n      \"Type\": \"Testing event\",\n      \"Status\": \"Active\",\n      \"Start_Date\": \"2025-07-10\",\n      \"End_Date\": \"2026-07-10\",\n      \"Description\": \"{{ $json.body.templateName }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        368
+      ],
+      "id": "f3131e9c-018f-462b-8f6c-ebccfe605009",
+      "name": "Create campaign",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Deal with COMPLETE STATUS",
+        "height": 388,
+        "width": 1284,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1360
+      ],
+      "id": "561f2765-b699-4c29-8ff3-1e537f8c8b19",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9162fc3a-747d-4fea-8688-246885307449",
+              "leftValue": "={{ $('Get Lead ID by Lead_UID').item.json.PIC }}",
+              "rightValue": "=null",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        2064
+      ],
+      "id": "3b9ed906-0b69-4a49-8d60-b2da000899b4",
+      "name": "Check If PIC DOES NOT exists"
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "BU_Product",
+            "Lead_UID",
+            "Full_Name",
+            "Lead_Status",
+            "PIC",
+            "Mobile"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        1408
+      ],
+      "id": "7e6b94b2-e06f-4a66-ae23-7b35e298f45f",
+      "name": "Get many leads1",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        1408
+      ],
+      "id": "8e6c2a37-140c-4d05-9986-860821aad534",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.first().json.data;\nconst leadUID = $('Get Task ID2').first().json.get_task_id; \n\nconst filteredLeads = leads.filter(lead => lead.Lead_UID === leadUID);\n\nreturn filteredLeads.map(lead => ({ json: lead }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        1408
+      ],
+      "id": "a989b106-cc6a-494a-bb6e-de15934c608d",
+      "name": "Get Lead ID by Lead_UID1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const noteContent = $input.first().json.remark_text_to_Zoho;\n\n// 处理换行符\nconst formattedNoteContent = noteContent.replace(/\\s+/g, ' ').trim();\n\nconst taskId = $('Security Check Task ID').first().json.lead_record_id;\n\n// 构建请求体\nconst requestBody = {\n    data: [\n        {\n            Note_Title: \"EIHL Sales CRM Task Log for Lead Task ID (\" + taskId + \")\",\n            Note_Content: formattedNoteContent, // 使用处理后的内容\n            Parent_Id: \"123\",\n            se_module: \"Leads\"\n        }\n    ]\n};\n\nreturn requestBody;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        2480
+      ],
+      "id": "9108bcc3-1dad-4537-a525-edda6a703973",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c77c947e-aa5b-4f4e-be9a-862c3d1e3e3e",
+              "name": "remark_text_to_Zoho",
+              "value": "=By CRM PIC Phone ({{ $('Webhook').item.json.body.phone }}) : {{ $('Webhook').item.json.body.task_log }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        2480
+      ],
+      "id": "903bd7ad-9b9d-40ff-8f10-f3d42f5fc603",
+      "name": "Construct Notes2"
+    },
+    {
+      "parameters": {
+        "content": "Mark Effort task message to Lead Notes, MUST DO ASAP",
+        "height": 596,
+        "width": 1284,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        2400
+      ],
+      "id": "8385d387-fe1f-4aeb-8ac1-903a9d1140fe",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "crm_task_completion",
+          "mode": "list",
+          "cachedResultName": "crm_task_completion"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_id": "={{ $('Get Lead ID by Lead_UID1').item.json.id }}",
+            "lead_record_id": "={{ $('Get Lead ID by Lead_UID1').item.json.Lead_UID }}",
+            "phone": "={{ $('Get Lead ID by Lead_UID1').item.json.Mobile }}",
+            "timestamp": "={{ $('Now()').item.json.currentDateTime }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_record_id",
+              "displayName": "lead_record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2048,
+        1408
+      ],
+      "id": "c2791f3c-0007-4578-bce9-e9ae9caff2e9",
+      "name": "Insert record id for task log",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 獲取 GMT+8 時區的時間\nconst options = { timeZone: 'Asia/Hong_Kong', hour12: false };\nconst formatter = new Intl.DateTimeFormat('en-US', options);\n\n// 獲取 GMT+8 時間的各個組件\nconst localDate = new Date(now.toLocaleString(\"en-US\", { timeZone: \"Asia/Hong_Kong\" }));\n\nlocalDate.setHours(localDate.getHours());\n\n// 格式化為 yyyy-MM-dd hh:mm:ss\nconst year = localDate.getFullYear();\nconst month = String(localDate.getMonth() + 1).padStart(2, '0'); // 月份從 0 開始\nconst day = String(localDate.getDate()).padStart(2, '0');\nconst hours = String(localDate.getHours()).padStart(2, '0');\nconst minutes = String(localDate.getMinutes()).padStart(2, '0');\nconst seconds = String(localDate.getSeconds()).padStart(2, '0');\n\nconst currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;\n\nreturn [{ json: { currentDateTime } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        1168
+      ],
+      "id": "5b25415f-f113-476e-8c43-5b6374dd68e4",
+      "name": "Now()"
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "update",
+        "leadId": "={{ $('Get Lead ID by Lead_UID').item.json.id }}",
+        "updateFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "PIC",
+                "value": "={{ $('Webhook').item.json.body.senderName }}"
+              },
+              {
+                "fieldId": "PIC_Mobile",
+                "value": "={{ $('Webhook').item.json.body.waId }}"
+              },
+              {
+                "fieldId": "Follow_up_at",
+                "value": "={{ $('Now()').item.json.currentDateTime }}"
+              }
+            ]
+          },
+          "Lead_Status": "PIC Following"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        2048
+      ],
+      "id": "cb5d0b6f-78f4-42a8-96d8-6903e80b41f8",
+      "name": "Update Lead Record to Assigned PIC",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/leads/{{$('Get Lead ID by Lead_UID1').item.json.id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n        {\n            \"id\":\"{{$('Get Lead ID by Lead_UID1').item.json.id}}\",\n            \"Lead_Status\":\"Completed\",\n            \"Last_Name\":\"{{$('Get Lead ID by Lead_UID1').item.json.Full_Name }}\",\n            \"Lead_UID\":\"{{$('Get Lead ID by Lead_UID1').item.json.Lead_UID}}\",\n            \"PIC\":\"{{ $('Webhook').item.json.body.senderName }}\",\n            \"Lead_Code\":\"{{$('Get Lead ID by Lead_UID1').item.json.Full_Name }} - {{$('Get Lead ID by Lead_UID1').item.json.BU_Product }} - {{$('Get Lead ID by Lead_UID1').item.json.Lead_UID}}\",\n            \"Complete_at\":\"{{ $('Now()').item.json.currentDateTime }}\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        1408
+      ],
+      "id": "41856cab-4fd5-4e94-9cc3-0db15813e06d",
+      "name": "Update Lead Status to Completed"
+    },
+    {
+      "parameters": {
+        "content": "Warning",
+        "height": 204,
+        "width": 196,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        2464
+      ],
+      "id": "98300be6-81c6-467e-96c1-34af81e6c0a8",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the current date and time in GMT+8\nconst now = new Date();\n\n// Convert to ISO string and format to include the date and time\nconst options = {\n    timeZone: 'Asia/Singapore',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: false\n};\n\nconst formatter = new Intl.DateTimeFormat('en-CA', options);\nconst parts = formatter.formatToParts(now);\n\n// Create a formatted timestamp in 'YYYY-MM-DD hh:mm:ss' format\nconst formattedDate = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;\n\n// Return the formatted current timestamp in GMT+8\nreturn {\n    json: {\n        currentTimestamp: formattedDate\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        2048
+      ],
+      "id": "d2518d2d-a4be-4209-a86c-b85af2d95fc2",
+      "name": "get now()",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "94a95c4a-dfad-4cca-9b63-593bba236dfa",
+              "leftValue": "={{  $('Webhook').item.json.body.text  }}",
+              "rightValue": "={{  $('Webhook').item.json.body.text.split(\":\")[0]  }}: COMPLETE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "223137c3-0b16-4bdd-b119-8d9edf0a2ab4",
+              "leftValue": "={{  $('Webhook').item.json.body.type  }}",
+              "rightValue": "interactive",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        1424
+      ],
+      "id": "30a9cd28-ce54-4631-ad4f-7d3925494744",
+      "name": "Complete CRM Task and check if button response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bed02d1-50db-4d10-8a34-bd2282100d63",
+              "name": "get_task_id",
+              "value": "={{  $('Webhook').item.json.body.text.split(\":\")[0]  }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        1552
+      ],
+      "id": "47c94569-456a-47ad-9c66-b8bca9ba2143",
+      "name": "Get Task ID2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/leads/{{ $('Get Lead ID by Lead_UID1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2176,
+        1408
+      ],
+      "id": "f187a89d-751e-4f7b-b0bd-4b478702de13",
+      "name": "GET LEAD1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/leads/{{$('Get Lead ID by Lead_UID1').item.json.id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n        {\n            \"id\":\"{{$('Get Lead ID by Lead_UID1').item.json.id}}\",\n            \"Task_Duration\":\"{{$('Lead Duration').item.json.duration.output}}\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        1600
+      ],
+      "id": "19304097-8535-4a5f-ac3d-b8b31be6a53e",
+      "name": "Update Lead Duration"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Define the timestamps\nconst completeAt = $input.first().json.data[0].Complete_at;\nconst followUpAt = $input.first().json.data[0].Follow_up_at;\n\n// Convert the timestamps to Date objects\nconst completeDate = new Date(completeAt);\nconst followUpDate = new Date(followUpAt);\n\n// Calculate the difference in milliseconds\nconst durationInMs = completeDate - followUpDate;\n\n// Convert milliseconds to hours, minutes, and seconds\nconst totalSeconds = Math.floor(durationInMs / 1000);\nconst hours = Math.floor(totalSeconds / 3600);\nconst minutes = Math.floor((totalSeconds % 3600) / 60);\nconst seconds = totalSeconds % 60;\n\nconst output = hours+\" hour(s) \"+minutes+ \" minute(s) \"\n\n// Return the duration\nreturn {\n    json: {\n        duration: {\n            output\n        }\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        1600
+      ],
+      "id": "ae3c2243-9471-42aa-b710-216b0f3f73de",
+      "name": "Lead Duration"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from crm_task_completion where timestamp + interval '5 minute' > now() order by id desc limit 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1424,
+        2480
+      ],
+      "id": "e1790089-5006-405b-920c-8001805c7966",
+      "name": "Security Check Task ID",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/leads/{{$('Security Check Task ID').item.json.lead_id}}/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n       {\n            \"Note_Title\": \"{{ $json.data[0].Note_Title }}\",\n            \"Note_Content\": \"{{ $json.data[0].Note_Content }}\",\n            \"Parent_Id\": \"{{$('Security Check Task ID').item.json.lead_id}}\",\n            \"se_module\": \"Leads\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        2480
+      ],
+      "id": "fc45562b-b3f9-4cce-8710-4d8c20dde27d",
+      "name": "Add bot msg to Lead Note"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Full_Name",
+            "Mobile"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        2480
+      ],
+      "id": "05ab3d7a-20aa-4fdd-adc9-99209bf635dc",
+      "name": "Get many contacts",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        2752
+      ],
+      "id": "57903738-a36d-48e2-8e0f-7c841a626d2a",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const contacts = $input.first().json.data;\n//const phone = $('Security Check Task ID').first().json.phone; \n\nconst mobile = $('Security Check Task ID').first().json.phone \n\nconst filteredContacts = contacts.filter(contacts => contacts.Mobile === mobile);\n\nreturn filteredContacts.map(contacts => ({ json: contacts }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        2752
+      ],
+      "id": "6cacdd65-ada0-4101-adcc-9247dbcd3be7",
+      "name": "Get Contact ID by Name"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/contacts/{{$('Get Contact ID by Name').item.json.id}}/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Zoho Token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"data\": [\n       {\n            \"Note_Title\": \"{{ $('Code1').item.json.data[0].Note_Title }}\",\n            \"Note_Content\": \"{{ $('Code1').item.json.data[0].Note_Content }}\",\n            \"Parent_Id\": \"{{$('Get Contact ID by Name').item.json.id}}\",\n            \"se_module\": \"Contacts\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1648,
+        2752
+      ],
+      "id": "1ea858e5-cb25-4703-8d28-ebd8d3dbc59a",
+      "name": "Add bot msg to Contact Note"
+    },
+    {
+      "parameters": {
+        "content": "debug mode (campaign)",
+        "height": 320,
+        "width": 488,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        288
+      ],
+      "id": "31994ca2-63d9-4c80-a29e-5a43db95c78f",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "url": "=https://sandbox.zohoapis.com/crm/v2/Campaigns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get Zoho access token1').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1728,
+        384
+      ],
+      "id": "93033748-28ae-41df-bd8f-fe08c17e2fb8",
+      "name": "Get campaign (debug)"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        384
+      ],
+      "id": "3279e5d8-a5b8-40bb-b15b-6be283551a92",
+      "name": "Get Zoho access token1",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "86de76f1-a682-4996-8973-3a62726d3b5f",
+              "name": "campaign_name",
+              "value": "=Zeekr x Piaget x Emperor Watch and Jewellery",
+              "type": "string"
+            },
+            {
+              "id": "2bd4f8b5-da08-49f9-bfcc-eb3cd9a61c6e",
+              "name": "tpl_name",
+              "value": "zeekr",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        928
+      ],
+      "id": "7f53129f-3b38-4205-a258-3aeb616e4fe8",
+      "name": "Hardcode field"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        512,
+        928
+      ],
+      "id": "5e450063-d371-4883-8dbb-316878f9052d",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6ae24ffb-5c06-4ced-8b91-a82bf643f932",
+              "leftValue": "={{  $('Webhook').item.json.body.eventType  }}",
+              "rightValue": "templateMessageSent_v2",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        944
+      ],
+      "id": "936e1d71-bd99-48a0-beb6-f28663ad0aa2",
+      "name": "If template message"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "=\n  {\n    \"mobile_num\": \"{{ $('Standardlize input').item.json.mobile_num }}\",\n    \"name\": \"Campaign Template\",\n    \"message\": {{ JSON.stringify($('Standardlize input').item.json.text) }},\n    \"timestamp\": \"{{ $('Standardlize input').item.json.created }}\",\n    \"from\":\"{{ $('Standardlize input').item.json.from }}\",\n    \"to\": \"{{ $('Standardlize input').item.json.to }}\",\n    \"conversationId\":\"{{ $('Standardlize input').item.json.conversationId }}\",\n    \"type\":\"template_message\",\n    \"source\":\"{{ $('Standardlize input').item.json.source }}\"\n  }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        720
+      ],
+      "id": "6fa9fa42-0d5b-4c74-a2bb-bf0637a29cdf",
+      "name": "Set message field"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "name"
+        },
+        "table": {
+          "__rl": true,
+          "value": "whatsapp_messages",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mobile_num",
+              "displayName": "mobile_num",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conversationId",
+              "displayName": "conversationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "from",
+              "displayName": "from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "operatorName",
+              "displayName": "operatorName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        720
+      ],
+      "id": "a3895d07-d1fc-4933-8809-4fbf6934e60f",
+      "name": "Insert Message to PSQL",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\"eventType\": {{ JSON.stringify($('Webhook').item.json.body.eventType) }},\n\"conversationId\": {{ JSON.stringify($('Webhook').item.json.body.conversationId) }},\n\"text\": {{ JSON.stringify($('Webhook').item.json.body.text) }},\n\"type\": \"template_message\",\n\"created\": {{ JSON.stringify($('Webhook').item.json.body.created) ?? null }},\n\"senderName\": \"{{ JSON.stringify($('Webhook').item.json.body.senderName) ?? null }}\",\n\"from\": \"{{ $('Webhook').item.json.body.waId ?? $('Webhook').item.json.body.from }}\",\n\"to\": \"{{ $('Webhook').item.json.body.waId ?? $('Webhook').item.json.body.to }}\",\n\"source\": \"{{ JSON.stringify($json.source) ?? \"WATI\" }}\",\n\"mobile_num\": \"{{ JSON.stringify($json.mobile_num) ?? $('Webhook').item.json.body.waId}}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        720
+      ],
+      "id": "300b5072-b28f-49d5-8b21-4e9c9a3f9035",
+      "name": "Standardlize input"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xcebN7QJ6UaNERYz",
+          "mode": "list",
+          "cachedResultName": "Zoho Campaign Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2208,
+        1056
+      ],
+      "id": "2bfa2b93-5220-4eb7-91c2-347367bff172",
+      "name": "Invite Campaign"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\": \n  {\n    \"campaign_id\": \"{{ $('Set attributes').item.json.campaign_id }}\",\n    \"mobile\": \"{{ $('Set attributes').item.json.mobile }}\",\n    \"action\":\"invite\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2032,
+        1056
+      ],
+      "id": "fd825a9d-956c-4155-9426-7d70b01b2edb",
+      "name": "Set Parm"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\": \n  {\n    \"campaign_id\": \"{{ $('Set attributes').item.json.campaign_id }}\",\n    \"remark_text_to_Zoho\": \"Customer reply as: {{ $('Webhook').item.json.body.text.split(' - ')[1] }}\",\n    \"buttonReply\":\"{{ $('Webhook').item.json.body.buttonReply.text }}\",\n    \"mobile\":\"{{ $('Set attributes').item.json.mobile }}\",\n    \"action\":\"decision\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2048,
+        880
+      ],
+      "id": "47b907b6-d1af-4eb3-a5f9-2628cb8ad8c9",
+      "name": "Set Parm1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xcebN7QJ6UaNERYz",
+          "mode": "list",
+          "cachedResultName": "Zoho Campaign Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2208,
+        880
+      ],
+      "id": "074d4574-ac61-4442-9158-cf69bc5f0661",
+      "name": "Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d1990d2a-89f3-472c-be90-a019a41ea859",
+              "leftValue": "={{ $('Webhook').item.json.body.action }}",
+              "rightValue": "mark_log",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        2496
+      ],
+      "id": "fdab9e4b-0a9d-4732-82ed-9b614125bd06",
+      "name": "If action is mark_log"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from zoho_contact where mobile = '{{ $('Webhook').item.json.body.waId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1376,
+        768
+      ],
+      "id": "7162c6b3-e3c1-4248-810b-4ec9ad6d8ae5",
+      "name": "get zoho profile data",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_campaign",
+          "mode": "list",
+          "cachedResultName": "zoho_campaign"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "campaign_name",
+              "condition": "LIKE",
+              "value": "={{ $('Hardcode field').item.json.campaign_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -432,
+        928
+      ],
+      "id": "e777cdff-4cec-4f45-8e19-b98861349a4c",
+      "name": "Get Campaign ID",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19ec6806-eeab-479d-beb4-6b9b9e0a04e9",
+              "leftValue": "={{ $('get zoho profile data').item.json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        768
+      ],
+      "id": "88ea070d-bc50-467e-9ffb-9c5655940b96",
+      "name": "if data exists"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        576
+      ],
+      "id": "ebdf2c4a-d5ab-4ef5-82d5-f4d6e18e70c1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\n \n\n\n\n\n\n\n \n\n\"body\": \n{\n  \n  \n  \n\"eventType\": \n\"templateMessageSent_v2\",\n  \n  \n  \n\"localMessageId\": \nnull,\n  \n  \n  \n\"id\": \n\"69bcd4de673d9169210787d3\",\n  \n  \n  \n\"whatsappMessageId\": \n\"wamid.HBgLODUyOTIxNTc0MDMVAgARGBI1MDlCQUVCQjFCREVGMUUzMzcA\",\n  \n  \n  \n\"templateId\": \n\"69ba5c816b294e624e34c0a8\",\n  \n  \n  \n\"templateName\": \n\"zeekr_southsky_eng\",\n  \n  \n  \n\"created\": \n\"2026-03-20T05:02:25.6681124Z\",\n  \n  \n  \n\"conversationId\": \n\"69bcc25c7b7a924925c0186a\",\n  \n  \n  \n\"ticketId\": \n\"69bcd4dd293328564d8a3186\",\n  \n  \n  \n\"text\": \n\" \\n\\n Dear Quan Kep Nicole,\\n\\nWe are delighted to invite you to an exclusive collaborative event presented by *Zeekr x Piaget x Emperor Watch and Jewellery*.\\n\\n*Date*: Thursday, 26 March 2026\\n*Time*: 4:00 PM – 8:00 PM\\n*Venue*: G/F & Basement, New World Tower, 16-18 Queen’s Road Central, Central\\n\\nThe event will feature:\\n\\n1. *Zeekr*   Brand Presentation and Test Drive Registration\\n2. *Piaget* Watch Preview and Try-on Experience\\n\\nIn addition, two exclusive workshops will be available:\\n\\n1. Curated Tea Appreciation Session\\n2. Piaget Handcraft Engraving Workshop\\n\\nA selection of cocktails will be served throughout the event.\\nWe look forward to sharing an elegant and memorable evening with you.\\n\\nPlease kindly reply by *20 March 2026* to confirm your attendance so that we may reserve your place.\\n\\nShould you have any questions, please feel free to contact us.\\n\\nBest regards,\\nEmperor Properties\",\n  \n  \n  \n\"operatorEmail\": \nnull,\n  \n  \n  \n\"waId\": \n\"85292157403\",\n  \n  \n  \n\"type\": \n\"template\",\n  \n  \n  \n\"statusString\": \n\"SENT\",\n  \n  \n  \n\"sourceType\": \n\"BOT\",\n  \n  \n  \n\"headerLink\": \nnull,\n  \n  \n  \n\"headerType\": \nnull\n  \n  \n}\n\n\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        576
+      ],
+      "id": "94453abb-489a-4270-a3f3-0f328f2583d9",
+      "name": "Webhook2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Hardcode field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If button response": {
+      "main": [
+        [
+          {
+            "node": "Set Parm1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Template message >> invitation": {
+      "main": [
+        [
+          {
+            "node": "Set Parm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set attributes": {
+      "main": [
+        [
+          {
+            "node": "If button response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Template message >> invitation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho access token": {
+      "main": [
+        [
+          {
+            "node": "get zoho profile data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Task ID": {
+      "main": [
+        [
+          {
+            "node": "Get many leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Token": {
+      "main": [
+        [
+          {
+            "node": "Get Task ID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many leads": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Get Lead ID by Lead_UID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead ID by Lead_UID": {
+      "main": [
+        [
+          {
+            "node": "Check If PIC DOES NOT exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if event message or not": {
+      "main": [
+        [
+          {
+            "node": "Get Zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Now()",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Button Reply or Not": {
+      "main": [
+        [
+          {
+            "node": "Get Task ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If action is mark_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If PIC exists, check he is the right PIC or not": {
+      "main": [
+        [
+          {
+            "node": "Send Msg to Assigned PIC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "He is not the PIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If PIC DOES NOT exists": {
+      "main": [
+        [
+          {
+            "node": "get now()",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If PIC exists, check he is the right PIC or not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many leads1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Get Lead ID by Lead_UID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead ID by Lead_UID1": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Status to Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Add bot msg to Lead Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct Notes2": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert record id for task log": {
+      "main": [
+        [
+          {
+            "node": "GET LEAD1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Now()": {
+      "main": [
+        [
+          {
+            "node": "Zoho Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead Record to Assigned PIC": {
+      "main": [
+        [
+          {
+            "node": "Send Msg to Assigned PIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead Status to Completed": {
+      "main": [
+        [
+          {
+            "node": "Insert record id for task log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get now()": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Record to Assigned PIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complete CRM Task and check if button response": {
+      "main": [
+        [
+          {
+            "node": "Get many leads1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Button Reply or Not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Task ID2": {
+      "main": [
+        [
+          {
+            "node": "Complete CRM Task and check if button response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET LEAD1": {
+      "main": [
+        [
+          {
+            "node": "Lead Duration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Duration": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Duration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Security Check Task ID": {
+      "main": [
+        [
+          {
+            "node": "Construct Notes2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add bot msg to Lead Note": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many contacts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Get Contact ID by Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact ID by Name": {
+      "main": [
+        [
+          {
+            "node": "Add bot msg to Contact Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoho access token1": {
+      "main": [
+        [
+          {
+            "node": "Get campaign (debug)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hardcode field": {
+      "main": [
+        [
+          {
+            "node": "Get Campaign ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Check if event message or not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If template message": {
+      "main": [
+        [
+          {
+            "node": "Standardlize input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set message field": {
+      "main": [
+        [
+          {
+            "node": "Insert Message to PSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Message to PSQL": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardlize input": {
+      "main": [
+        [
+          {
+            "node": "Set message field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Parm": {
+      "main": [
+        [
+          {
+            "node": "Invite Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Parm1": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If action is mark_log": {
+      "main": [
+        [
+          {
+            "node": "Security Check Task ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get zoho profile data": {
+      "main": [
+        [
+          {
+            "node": "if data exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Campaign ID": {
+      "main": [
+        [
+          {
+            "node": "If template message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if data exists": {
+      "main": [
+        [
+          {
+            "node": "Set attributes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "566ccbed-9cc4-4713-a899-ac05ee08f40c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "KTlEnBIqaVFNPUHr",
+  "tags": []
+}

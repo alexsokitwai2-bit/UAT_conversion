@@ -1,0 +1,686 @@
+{
+  "name": "Lead Modules",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": \n    [\n      {\n        \"id\": \"{{ $('Get Specific Leads').item.json.data[0].id }}\", \n        \"Tag\": {{ $json.tag_string }}\n      }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        480
+      ],
+      "id": "7d4ce788-8239-4990-9523-1e6fee1e2bba",
+      "name": "Update array fields (Tags, Tier, Num)"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Leads/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1136,
+        192
+      ],
+      "id": "faa4d4cb-5953-4982-aa33-f4ae93551e7e",
+      "name": "Get Specific Leads"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "94328550-eee2-4e3f-833a-5c708b79ddd2",
+              "name": "=Tag",
+              "value": "={{ $('Get Specific Leads').item.json.data[0].Tag }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        480
+      ],
+      "id": "053aba61-9a6a-4183-928b-4d4b8e0aa406",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 假設這是從 $json.data[0].Tag 獲取的陣列\nlet tags = $input.first().json.Tag;\n\n// 新的標籤項目\nconst newTag = { \"name\": $('Standard Input').first().json.category, \"id\":\"123\" };\n\n// 將新標籤項目添加到 tags 陣列中\ntags.push(newTag);\n\n//const extractedTags = tags.map(tag => ({ name: tag.name }));\nconst tagNames = tags.map(tag => ({ name: tag.name })).flat();\n//const extractedTagsString = JSON.stringify({ extractedTags });\n\nreturn [{ json: { tagNames } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        480
+      ],
+      "id": "75eb4ed0-8c0d-45a0-b6ec-aa5960c7a3fc",
+      "name": "Construct tags"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/Notes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Zoho-oauthtoken {{ $('Get zoho access token').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    {\n      \"Note_Title\": \"AI LLM Analysis\",\n      \"Note_Content\": \"**{{ $('Standard Input').item.json.LLM_summary }}** \\n\\n From conservation below: \\n {{ JSON.stringify($('Standard Input').item.json.conv_info).slice(1, -1) }}\",\n      \"Parent_Id\": \"{{ $('Get Specific Leads').item.json.data[0].id}}\",\n      \"se_module\": \"Leads\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        480
+      ],
+      "id": "7f5ef041-15b3-45cd-810d-d1e0f1cd3b1e",
+      "name": "Add Lead Note"
+    },
+    {
+      "parameters": {
+        "content": "Insert to Zoho Leads",
+        "height": 628,
+        "width": 1876,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        32
+      ],
+      "id": "44b80e74-7444-4297-bca1-ad693efbaee1",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "zoho_token",
+          "mode": "list",
+          "cachedResultName": "zoho_token"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "timestamp",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -240,
+        176
+      ],
+      "id": "8f6fbd6e-9689-4421-ac2e-997c0f5ad638",
+      "name": "Get zoho access token",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "465667c7-1e42-4a7c-9efd-3dd5bc3b019a",
+              "leftValue": "={{ $('Standard Input').item.json.channel }}",
+              "rightValue": "WeChat",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        176
+      ],
+      "id": "7f6a2e8d-fda8-42ec-895a-102b18b4d43c",
+      "name": "isFromWeChat1"
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "upsert",
+        "Company": "Emperor Properties",
+        "lastName": "={{ $('get zoho profile data').item.json.Last_Name }}",
+        "additionalFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "Lead_Code",
+                "value": "={{ $('get zoho profile data').item.json.Last_Name }} - {{ $('Standard Input').item.json.category }}"
+              },
+              {
+                "fieldId": "BU_Product",
+                "value": "={{ $('Standard Input').item.json.category }}"
+              },
+              {
+                "fieldId": "AI_Latest_Summary",
+                "value": "={{ $('Standard Input').item.json.LLM_summary }}"
+              }
+            ]
+          },
+          "Full_Name": "={{ $('get zoho profile data').item.json.Last_Name }}",
+          "Lead_Source": "WhatsApp",
+          "Mobile": "={{ $('Standard Input').item.json.mobile }}"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        880,
+        224
+      ],
+      "id": "6d7c289d-9375-4a11-b54d-4314e3b6de2f",
+      "name": "Create or update a lead(Wati)",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "upsert",
+        "Company": "Emperor Properties",
+        "lastName": "={{ $('get zoho profile data').item.json.First_Name }} {{ $('get zoho profile data').item.json.Last_Name }}",
+        "additionalFields": {
+          "customFields": {
+            "customFields": [
+              {
+                "fieldId": "Lead_Code",
+                "value": "={{ $('get zoho profile data').item.json.First_Name }} {{ $('get zoho profile data').item.json.Last_Name }} - {{ $('Standard Input').item.json.category }}"
+              },
+              {
+                "fieldId": "BU_Product",
+                "value": "={{ $('Standard Input').item.json.category }}"
+              },
+              {
+                "fieldId": "AI_Latest_Summary",
+                "value": "={{ $('Standard Input').item.json.LLM_summary }}"
+              }
+            ]
+          },
+          "Description": "来自微信的用户",
+          "Full_Name": "={{ $('get zoho profile data').item.json.First_Name }} {{ $('get zoho profile data').item.json.Last_Name }}",
+          "Lead_Source": "WeChat",
+          "Mobile": "={{ $('Standard Input').item.json.mobile }}"
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        880,
+        48
+      ],
+      "id": "2e603c03-690f-4ae7-8e05-67d32ccb54da",
+      "name": "Create or update a lead(WeChat)",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        144,
+        176
+      ],
+      "id": "e616d87b-73a6-43ff-aaef-4ecbe3ae32d1",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Mobile",
+            "Last_Name",
+            "First_Name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.zohoCrm",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        176
+      ],
+      "id": "64ce2f33-55fc-47c7-adc3-e2e57a5d4d51",
+      "name": "Get many contacts1",
+      "credentials": {
+        "zohoOAuth2Api": {
+          "id": "GVUtg09pbovbNsot",
+          "name": "Zoho Sandbox Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        80
+      ],
+      "id": "ac5c7d23-e36e-4fc4-92b1-a8d919dcdd89",
+      "name": "Webhook",
+      "webhookId": "64fcd9bf-b5e7-41e0-9e59-96c706187f49",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get API endpoints').item.json.n8n_domain }}/webhook/crm_task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTRhNTZhYy05YTEwLTRiY2UtYTQ2NS0xMTA1OGRlZjU1MTIiLCJ1bmlxdWVfbmFtZSI6ImpvaG5hdGhhbnRzZWNsQGVtcGVyb3Jncm91cC5jb20iLCJuYW1laWQiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiZW1haWwiOiJqb2huYXRoYW50c2VjbEBlbXBlcm9yZ3JvdXAuY29tIiwiYXV0aF90aW1lIjoiMDUvMjIvMjAyNSAwMTo1Mjo1NyIsInRlbmFudF9pZCI6IjQzMTQyNiIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.njwrbFnQzNhEFpKajPFgaAodNwtPA-I-aj721F366xI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"header\": {\n    \"mobile\": \"{{ $('Standard Input').item.json.mobile }}\",\n    \"type\": \"Text\",\n    \"text\": \"{{ $('Get Specific Leads').item.json.data[0].Lead_UID }}: CRM Tasks Follow Up Request\"\n  },\n  \"body\": \"{{ JSON.stringify($('Standard Input').item.json.msg_body).slice(1, -1) }}\",\n  \"footer\": \"By Emperor Properties\",\n  \"buttons\": [\n    {\n      \"text\": \"{{ $('Get Specific Leads').item.json.data[0].Lead_UID }}: Follow Up\"\n    }\n  ]\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        480
+      ],
+      "id": "e411d5c9-579b-43ea-b187-2e2e3faa262e",
+      "name": "CRM Task Message to CS"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "api_credentials",
+          "mode": "list",
+          "cachedResultName": "api_credentials"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -416,
+        288
+      ],
+      "id": "0d3837ff-8b72-47a4-8230-d9010d8bbc75",
+      "name": "Get API endpoints",
+      "credentials": {
+        "postgres": {
+          "id": "cj1RzUB8nTNEHJpu",
+          "name": "Postgres-UAT-n8n-admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function findMatchingRecord() {\n    // 假设 contactData 就是您提供的 mobile JSON 数据\n    const contactData = $input.first().json.data;\n\n    // 假设 webhookData 就是您提供的 webhook 的数据\n    const webhookData = $('Standard Input').first().json;\n\n    const results = [];\n    \n    // 获取 waId\n    const waId = webhookData.mobile;\n\n    // 查找匹配的记录\n        contactData.forEach(contact => {\n            if (contact.Mobile === waId) {\n                results.push(contact);\n            }\n        });\n\n    return results.length > 0 ? results : []; // 返回匹配的记录或空数组\n}\n\n// 调用函数并返回结果\nreturn findMatchingRecord();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        176
+      ],
+      "id": "c669d9b5-56c8-451e-8f73-f28909641217",
+      "name": "get zoho profile data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        288
+      ],
+      "id": "f0458886-472e-45ef-a6be-22875b1e0f09",
+      "name": "Standard Input"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -864,
+        288
+      ],
+      "id": "f3fdae8b-532d-4f8e-abc1-b075dc06df1a",
+      "name": "From Subworkflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c08551ea-006f-4069-b770-20826481951d",
+              "name": "tag_string",
+              "value": "={{ $json.tagNames }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        480
+      ],
+      "id": "a23ca494-31ab-4249-8955-507ae2ee4ea1",
+      "name": "Tag to string"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Update array fields (Tags, Tier, Num)": {
+      "main": [
+        [
+          {
+            "node": "Add Lead Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Specific Leads": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Construct tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construct tags": {
+      "main": [
+        [
+          {
+            "node": "Tag to string",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Lead Note": {
+      "main": [
+        [
+          {
+            "node": "CRM Task Message to CS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get zoho access token": {
+      "main": [
+        [
+          {
+            "node": "Get many contacts1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isFromWeChat1": {
+      "main": [
+        [
+          {
+            "node": "Create or update a lead(WeChat)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create or update a lead(Wati)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a lead(Wati)": {
+      "main": [
+        [
+          {
+            "node": "Get Specific Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a lead(WeChat)": {
+      "main": [
+        [
+          {
+            "node": "Get Specific Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "get zoho profile data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many contacts1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Get API endpoints": {
+      "main": [
+        [
+          {
+            "node": "Get zoho access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get zoho profile data": {
+      "main": [
+        [
+          {
+            "node": "isFromWeChat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard Input": {
+      "main": [
+        [
+          {
+            "node": "Get API endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "From Subworkflow": {
+      "main": [
+        [
+          {
+            "node": "Standard Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tag to string": {
+      "main": [
+        [
+          {
+            "node": "Update array fields (Tags, Tier, Num)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bd7wEK5rKd6CqgGk"
+  },
+  "versionId": "e8ea5494-95b0-4958-9284-f8584388fa5e",
+  "meta": {
+    "instanceId": "e7725a6a6e3b2c15408ec59d5d29723171f6b0a7daf5ccb4927f48385162d3cf"
+  },
+  "id": "18RuWZgvjc3SyKZ7",
+  "tags": []
+}
