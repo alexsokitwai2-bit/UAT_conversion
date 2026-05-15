@@ -314,6 +314,17 @@ def _known_workflow_ids(mapping: dict[str, Any]) -> set[str]:
     return {x for x in ids if x}
 
 
+_REVIEW_SEV_ORDER = {"high": 0, "medium": 1, "low": 2}
+
+
+def _sort_review_items_by_severity(items: list[dict[str, Any]]) -> None:
+    items.sort(
+        key=lambda it: (
+            _REVIEW_SEV_ORDER.get(str(it.get("severity", "")).lower(), 9),
+        )
+    )
+
+
 def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     known_wf = _known_workflow_ids(mapping)
@@ -335,6 +346,7 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
 
     nodes = data.get("nodes")
     if not isinstance(nodes, list):
+        _sort_review_items_by_severity(items)
         return items
 
     for idx, node in enumerate(nodes):
@@ -493,4 +505,5 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                 }
             )
 
+    _sort_review_items_by_severity(items)
     return items

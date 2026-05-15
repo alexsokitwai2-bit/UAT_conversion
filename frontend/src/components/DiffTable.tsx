@@ -59,11 +59,11 @@ function findDeepDifference(lhs: any, rhs: any): { oldVal: any; newVal: any } | 
   if (pLhs.parsed && pRhs.parsed) {
     const objLhs = pLhs.val;
     const objRhs = pRhs.val;
-    
+
     if (objLhs !== null && objRhs !== null && typeof objLhs === "object" && typeof objRhs === "object") {
       const keys = new Set([...Object.keys(objLhs), ...Object.keys(objRhs)]);
       const diffs = [];
-      
+
       for (const k of keys) {
         if (JSON.stringify(objLhs[k]) !== JSON.stringify(objRhs[k])) {
           diffs.push({ k, v1: objLhs[k], v2: objRhs[k] });
@@ -87,6 +87,26 @@ function findDeepDifference(lhs: any, rhs: any): { oldVal: any; newVal: any } | 
   return { oldVal: lhs, newVal: rhs };
 }
 
+// 根據截圖定義的 n8n JSON 根節點順序
+const N8N_ROOT_ORDER = [
+  "name",
+  "nodes",
+  "pinData",
+  "connections",
+  "active",
+  "settings",
+  "versionId",
+  "meta",
+  "id",
+  "tags"
+];
+
+// 取得 path 的第一層 key (例如從 "nodes[0].name" 提取出 "nodes")
+function getRootKey(path: string) {
+  if (!path) return "";
+  return path.split(/[.\[]/)[0];
+}
+
 export function DiffTable({
   changes,
   onJump,
@@ -106,7 +126,33 @@ export function DiffTable({
     try { return rightJson ? JSON.parse(rightJson) : {}; } catch { return {}; }
   }, [rightJson]);
 
-  if (!changes.length) {
+  // 新增排序邏輯
+  const sortedChanges = useMemo(() => {
+    if (!changes) return [];
+    return [...changes].sort((a, b) => {
+      const rootA = getRootKey(a.path || "");
+      const rootB = getRootKey(b.path || "");
+
+      const indexA = N8N_ROOT_ORDER.indexOf(rootA);
+      const indexB = N8N_ROOT_ORDER.indexOf(rootB);
+
+      // 如果兩者都在定義的順序陣列中
+      if (indexA !== -1 && indexB !== -1) {
+        if (indexA !== indexB) return indexA - indexB;
+        // 修改這裡：加入 { numeric: true } 讓陣列索引 [3] 能夠排在 [21] 前面
+        return (a.path || "").localeCompare(b.path || "", undefined, { numeric: true });
+      }
+
+      // 如果其中一個不在定義清單中，確保未知的節點排在最後面
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+
+      // 如果都不在清單中，按照一般字母排序（修改這裡：同樣加入 numeric: true 以防萬一）
+      return (a.path || "").localeCompare(b.path || "", undefined, { numeric: true });
+    });
+  }, [changes]);
+
+  if (!sortedChanges.length) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
         <div className="text-sm font-medium text-slate-400">No structural differences detected.</div>
@@ -125,13 +171,14 @@ export function DiffTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {changes.slice(0, 500).map((c, i) => {
+          {/* 改為使用 sortedChanges 進行渲染 */}
+          {sortedChanges.slice(0, 500).map((c, i) => {
             const valLhs = c.old_value !== undefined ? c.old_value : getValueByPath(leftObj, c.path);
             const valRhs = c.new_value !== undefined ? c.new_value : getValueByPath(rightObj, c.path);
 
             let displayLhs = valLhs;
             let displayRhs = valRhs;
-            
+
             if (c.kind === "changed") {
               const deepDiff = findDeepDifference(valLhs, valRhs);
               if (deepDiff) {
@@ -140,12 +187,10 @@ export function DiffTable({
               }
             }
 
-            // --- 新增：智慧型上下文截斷邏輯 ---
             let textLhs = formatValue(displayLhs);
             let textRhs = formatValue(displayRhs);
 
             if (c.kind === "changed" && typeof displayLhs === "string" && typeof displayRhs === "string") {
-              // 如果字串很長，我們去找出它們從哪一個字元開始不同
               if (displayLhs.length > 40 || displayRhs.length > 40) {
                 let diffIdx = 0;
                 while (
@@ -156,16 +201,13 @@ export function DiffTable({
                   diffIdx++;
                 }
 
-                // 如果差異點發生在很後面的地方 (超過 20 個字元)，我們就改從差異點附近開始截斷
                 if (diffIdx > 20) {
-                  const start = Math.max(0, diffIdx - 15); // 往前推 15 個字元作為上下文
-                  // 擷取 35 個字元的長度，並把換行符號拿掉以免撐破表格
+                  const start = Math.max(0, diffIdx - 15);
                   textLhs = "..." + displayLhs.substring(start, start + 35).replace(/[\r\n]+/g, ' ') + "...";
                   textRhs = "..." + displayRhs.substring(start, start + 35).replace(/[\r\n]+/g, ' ') + "...";
                 }
               }
             }
-            // ---------------------------------
 
             return (
               <tr
@@ -185,22 +227,22 @@ export function DiffTable({
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {c.kind === "added" && (
                       <span className="text-emerald-600 bg-emerald-50 px-1 rounded border border-emerald-100">
-                        + {textRhs} {/* 改用 textRhs */}
+                        + {textRhs}
                       </span>
                     )}
                     {c.kind === "removed" && (
                       <span className="text-rose-600 bg-rose-50 px-1 rounded border border-rose-100">
-                        - {textLhs} {/* 改用 textLhs */}
+                        - {textLhs}
                       </span>
                     )}
                     {c.kind === "changed" && (
                       <>
                         <span className="text-slate-400 line-through decoration-slate-300">
-                          {textLhs} {/* 改用 textLhs */}
+                          {textLhs}
                         </span>
                         <span className="text-slate-400">→</span>
                         <span className="text-amber-700 font-medium bg-amber-50 px-1 rounded border border-amber-100/50">
-                          {textRhs} {/* 改用 textRhs */}
+                          {textRhs}
                         </span>
                       </>
                     )}
@@ -211,9 +253,9 @@ export function DiffTable({
           })}
         </tbody>
       </table>
-      {changes.length > 500 && (
+      {sortedChanges.length > 500 && (
         <div className="border-t border-slate-100 bg-slate-50 p-2 text-center text-[10px] font-medium text-slate-400">
-          Showing first 500 of {changes.length} changes.
+          Showing first 500 of {sortedChanges.length} changes.
         </div>
       )}
     </div>

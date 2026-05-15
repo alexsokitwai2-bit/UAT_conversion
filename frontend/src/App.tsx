@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FolderOpen, Save, Search, Wand2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, FolderOpen, Save } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { DiffTable } from "./components/DiffTable";
 import { JsonDiffEditor } from "./components/JsonDiffEditor";
@@ -47,10 +47,6 @@ export default function App() {
   const setEditMode = useAppStore((s) => s.setEditMode);
   const setJsonValid = useAppStore((s) => s.setJsonValid);
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [tagFilter, setTagFilter] = useState("");
-
   // 1. 將 loadFilePayload 移到這裡（在 Migrate 被宣告之前）
   const loadFilePayload = useCallback(async () => {
     if (!sessionId || !selectedFileId) return;
@@ -76,36 +72,24 @@ export default function App() {
     refetchInterval: false,
   });
 
+  const migrateMutation = useMutation({
+    mutationFn: (sessionId: string) => migrate(sessionId),
+    onSuccess: async (data) => {
+      setFiles(data.files);
+      void qc.invalidateQueries({ queryKey: ["summary", data.session_id] });
+      await loadFilePayload();
+    },
+  });
+
   const importMutation = useMutation({
     mutationFn: (fileList: File[]) => importFolder(fileList),
     onSuccess: (data) => {
       setSession(data.session_id, data.files);
       selectFile(data.files[0]?.file_id ?? null);
       void qc.invalidateQueries({ queryKey: ["summary", data.session_id] });
+      migrateMutation.mutate(data.session_id);
     },
   });
-
-  const migrateMutation = useMutation({
-    mutationFn: () => migrate(sessionId!),
-    onSuccess: async (data) => { // 加入 async
-      setFiles(data.files);
-      void qc.invalidateQueries({ queryKey: ["summary", sessionId] });
-      // 2. 遷移成功後，自動重新載入當前檔案的資料
-      await loadFilePayload();
-    },
-  });
-
-  const filteredFiles = useMemo(() => {
-    return files.filter((f) => {
-      if (search && !f.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (statusFilter !== "all" && f.status !== statusFilter) return false;
-      if (tagFilter) {
-        const t = tagFilter.toLowerCase();
-        if (!f.tags.some((x) => x.toLowerCase().includes(t))) return false;
-      }
-      return true;
-    });
-  }, [files, search, statusFilter, tagFilter]);
 
   const selectedMeta = useMemo(() => files.find((f) => f.file_id === selectedFileId), [files, selectedFileId]);
 
@@ -167,16 +151,6 @@ export default function App() {
 
         <button
           type="button"
-          disabled={!sessionId || migrateMutation.isPending}
-          onClick={() => migrateMutation.mutate()}
-          className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-40 disabled:hover:bg-white"
-        >
-          <Wand2 className="h-4 w-4" />
-          Migrate
-        </button>
-
-        <button
-          type="button"
           disabled={!sessionId || !selectedFileId}
           onClick={() => {
             if (!selectedMeta) return;
@@ -201,7 +175,7 @@ export default function App() {
           className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-40 disabled:hover:bg-white"
         >
           <Download className="h-4 w-4" />
-          Export ZIP
+          Export all workflow
         </button>
 
         <div className="ml-auto flex min-w-[220px] flex-col gap-1 text-xs text-slate-600">
@@ -232,43 +206,13 @@ export default function App() {
       <div className="grid min-h-0 flex-1 gap-4 p-4 grid-rows-[auto_1fr] md:grid-cols-[280px_1fr_300px] md:grid-rows-none">
         
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50/50 p-2">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search filename"
-                className="w-full rounded border border-slate-200 bg-white py-1.5 pl-8 pr-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow"
-            >
-              <option value="all">All statuses</option>
-              <option value="pending">Pending</option>
-              <option value="auto_converted">Auto</option>
-              <option value="manual_review">Review</option>
-              <option value="error">Error</option>
-            </select>
-            <input
-              value={tagFilter}
-              onChange={(e) => setTagFilter(e.target.value)}
-              placeholder="Tag filter"
-              className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow md:w-24"
-            />
-          </div>
-          <div className="flex min-h-0 flex-1 flex-col bg-white">
-            <WorkflowTree
-              title="Workflows"
-              stackId="explorer-workflows"
-              files={filteredFiles}
-              selectedId={selectedFileId}
-              onSelect={(id) => selectFile(id)}
-            />
-          </div>
+          <WorkflowTree
+            title="Workflows"
+            stackId="explorer-workflows"
+            files={files}
+            selectedId={selectedFileId}
+            onSelect={(id) => selectFile(id)}
+          />
         </aside>
 
         <main className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

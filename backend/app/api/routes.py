@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import json
-import zipfile
 from datetime import datetime, timezone
 from typing import Any
 
@@ -208,41 +207,38 @@ async def mark_reviewed(session_id: str, file_id: str, reviewed: bool = True) ->
 
 
 @router.get("/export/{session_id}")
-async def export_zip(session_id: str) -> StreamingResponse:
+async def export_workflows(session_id: str) -> StreamingResponse:
     session = store.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     mapping = get_mapping()
-    buf = io.BytesIO()
+    exported_workflows: list[dict[str, Any]] = []
     review_report: list[dict[str, Any]] = []
-    with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for sw in session.workflows.values():
-            if sw.current is None and sw.migrated is None:
-                continue
-            data = sw.effective()
-            name_safe = sw.display_name.replace("/", "_")
-            zf.writestr(f"workflows/{name_safe}", orjson.dumps(data, option=orjson.OPT_INDENT_2))
-            review_report.append(
-                {
-                    "file": sw.display_name,
-                    "reviewed": sw.reviewed,
-                    "items": [i.model_dump() for i in scan_workflow(data, mapping)],
-                }
-            )
-        zf.writestr(
-            "migration_report.json",
-            orjson.dumps(
-                {
-                    "generated_at": datetime.now(timezone.utc).isoformat(),
-                    "files": [m.model_dump() for m in [_meta_from_stored(x, mapping) for x in session.workflows.values()]],
-                },
-                option=orjson.OPT_INDENT_2,
-            ).decode(),
+
+    for sw in session.workflows.values():
+        if sw.current is None and sw.migrated is None:
+            continue
+        data = sw.effective()
+        exported_workflows.append({"name": sw.display_name, "workflow": data})
+        review_report.append(
+            {
+                "file": sw.display_name,
+                "reviewed": sw.reviewed,
+                "items": [i.model_dump() for i in scan_workflow(data, mapping)],
+            }
         )
-        zf.writestr("manual_review_report.json", orjson.dumps(review_report, option=orjson.OPT_INDENT_2).decode())
-    buf.seek(0)
-    headers = {"Content-Disposition": f'attachment; filename="n8n-prod-export-{session_id[:8]}.zip"'}
-    return StreamingResponse(buf, media_type="application/zip", headers=headers)
+
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "session_id": session_id,
+        "workflows": exported_workflows,
+        "migration_report": [m.model_dump() for m in [_meta_from_stored(x, mapping) for x in session.workflows.values()]],
+        "manual_review_report": review_report,
+    }
+
+    content = orjson.dumps(payload, option=orjson.OPT_INDENT_2)
+    headers = {"Content-Disposition": f'attachment; filename="n8n-prod-export-{session_id[:8]}.json"'}
+    return StreamingResponse(io.BytesIO(content), media_type="application/json", headers=headers)
 
 
 @router.get("/workflow/{session_id}/{file_id}")

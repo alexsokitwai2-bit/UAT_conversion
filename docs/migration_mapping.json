@@ -148,7 +148,7 @@
    "eihl-crm-storage-uat": "eihl-crm-storage-prod"
  },
  "watiChannels": {
-   "85290556233": "8529123456798"
+   "85290556233": "852XXXXXXXX"
  },
  "emailMappings": {
    "uat@emperorint.com": "prod@emperorint.com"
