@@ -16,6 +16,96 @@ _UUID_RE = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]
 # n8n exports often use compact alphanumeric workflow ids in executeWorkflow (not UUIDs).
 _N8N_SHORT_WF_ID_RE = re.compile(r"^[A-Za-z0-9]{15,20}$")
 
+# `[UAT]` tags and bracketed env markers like `[EIHL-CRM-UAT]` (suffix `-UAT]`).
+_UAT_LABEL_RE = re.compile(r"(?i)\[UAT\]|\[[^\]]*-UAT\]")
+
+
+def _has_uat_env_label(text: str) -> bool:
+    return bool(_UAT_LABEL_RE.search(text))
+
+
+# Zoho CRM-style search criteria in URLs: `(Field:equals:value)` after stripping n8n `{{ ... }}`.
+_ZOHO_CRITERIA_OP_RE = re.compile(
+    r":(equals|not_equal|not_equals|contains|starts_with|ends_with|in)\s*:",
+    re.I,
+)
+
+
+def _url_query_criteria_fragment(url: str) -> str | None:
+    """Return the substring after `criteria=` up to the next `&` at paren depth 0, or the rest of the URL."""
+    m = re.search(r"criteria=", url, re.I)
+    if not m:
+        return None
+    start = m.end()
+    depth = 0
+    i = start
+    while i < len(url):
+        c = url[i]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth = max(0, depth - 1)
+        elif c == "&" and depth == 0:
+            return url[start:i]
+        i += 1
+    return url[start:]
+
+
+def _url_has_hardcoded_search_criteria(url: str) -> bool:
+    """True if `criteria=` carries literal Zoho criterion values, not only `{{ n8n expressions }}`."""
+    frag = _url_query_criteria_fragment(url)
+    if frag is None:
+        return False
+    stripped = re.sub(r"\{\{[\s\S]*?\}\}", "", frag)
+    stripped = stripped.strip()
+    if not stripped:
+        return False
+    # Long numeric tokens (Zoho ids, etc.) outside expressions.
+    if re.search(r"\d{8,}", stripped):
+        return True
+    # Literal text after :equals: / :in: / … (empty after op → values are expression-driven).
+    for m in _ZOHO_CRITERIA_OP_RE.finditer(stripped):
+        chunk = stripped[m.end() :]
+        vm = re.match(r"([^)]+)", chunk)
+        if not vm:
+            continue
+        inner = vm.group(1).strip()
+        if not inner or re.fullmatch(r"[\s,;|]+", inner):
+            continue
+        if re.search(r"[\w\u0080-\uFFFF]", inner):
+            return True
+    return False
+
+
+def _external_saas_resource_id_hit(text: str) -> bool:
+    """Zoho / Pass2U style static resource ids in URLs or JSON-ish strings (see migration guide)."""
+    if not isinstance(text, str) or len(text) < 16:
+        return False
+    # Pass2U API: .../models/{id}/...
+    if re.search(r"(?i)pass2u[^\s\"']{0,240}?/models/\d{5,}(?:/|\?|\"|'|\s|$)", text):
+        return True
+    # Zoho CRM email template path
+    if re.search(r"(?i)email_templates/\d{10,}(?:[\"'/\s?;,]|$)", text):
+        return True
+    # Zoho settings API paths with trailing numeric id
+    if re.search(r'(?i)/crm/v2/settings/[^?\s"]+/\d{10,}(?:["\'/\s?]|$)', text):
+        return True
+    # Zoho module instance URL .../Contacts/663878900000123 (not /.../search? which uses criteria)
+    if re.search(r"(?i)/crm/v2/[A-Za-z_]+/\d{13,}(?:[\"'/\s?]|$)", text):
+        return True
+    stripped = re.sub(r"\{\{[\s\S]*?\}\}", "", text)
+    if not re.search(r"\d{10,}", stripped):
+        return False
+    if re.search(
+        r'(?i)["\'](?:benefit|template|layout|module|picklist|campaign)_?id["\']\s*:\s*["\']?(\d{10,})["\']?',
+        stripped,
+    ):
+        return True
+    # Benefit payloads: "id": "6638789000003866056" (Zoho-style length) outside expressions
+    if re.search(r'(?i)["\']id["\']\s*:\s*["\'](\d{13,})["\']', stripped):
+        return True
+    return False
+
 
 def _scan_headers(node_path: str, params: dict[str, Any], items: list[dict[str, Any]]) -> None:
     hp = params.get("headerParameters")
@@ -37,7 +127,7 @@ def _scan_headers(node_path: str, params: dict[str, Any], items: list[dict[str, 
                     "id": _item_id([node_path, "header", str(i)]),
                     "severity": "high",
                     "category": "api_secret",
-                    "message": f"Possible secret in header parameter '{p.get('name')}'",
+                    "message": f"Header may expose secret ({p.get('name')})",
                     "json_path": f"{node_path}.parameters.headerParameters.parameters[{i}].value",
                     "snippet": val[:80] + ("…" if len(val) > 80 else ""),
                     "suggested_field": "value",
@@ -77,13 +167,13 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
         base = f"{node_path}.parameters.queryParameters.parameters[{i}]"
         name_l = pname.lower()
 
-        if pname and re.search(r"\[UAT\]", pname, re.I):
+        if pname and _has_uat_env_label(pname):
             items.append(
                 {
                     "id": _item_id([node_path, "query", str(i), "name", "uat"]),
                     "severity": "medium",
                     "category": "env_label",
-                    "message": f"Query parameter name '{pname}' contains [UAT]",
+                    "message": f"UAT tag in query param name ({pname})",
                     "json_path": f"{base}.name",
                     "snippet": pname[:200],
                     "suggested_field": "name",
@@ -101,19 +191,19 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
                     "id": _item_id([node_path, "query", str(i), "uat_domain"]),
                     "severity": "high",
                     "category": "uat_domain",
-                    "message": "UAT domain cp-uat.emperorint.com in query parameter value",
+                    "message": "UAT domain in query value",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": "value",
                 }
             )
-        if re.search(r"\[UAT\]", val, re.I):
+        if _has_uat_env_label(val):
             items.append(
                 {
                     "id": _item_id([node_path, "query", str(i), "uat"]),
                     "severity": "medium",
                     "category": "env_label",
-                    "message": "Query parameter value contains [UAT]",
+                    "message": "UAT tag in query value",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": "value",
@@ -125,7 +215,7 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
                     "id": _item_id([node_path, "query", str(i), "tbc"]),
                     "severity": "medium",
                     "category": "placeholder",
-                    "message": "Query parameter value contains TBC placeholder",
+                    "message": "TBC placeholder in query value",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": "value",
@@ -142,7 +232,7 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
                         "id": _item_id([node_path, "query", str(i), "secret"]),
                         "severity": "high",
                         "category": "api_secret",
-                        "message": f"Possible secret in query parameter '{pname or '(unnamed)'}'",
+                        "message": f"Query param may expose secret ({pname or 'unnamed'})",
                         "json_path": val_path,
                         "snippet": val[:80] + ("…" if len(val) > 80 else ""),
                         "suggested_field": "value",
@@ -155,7 +245,7 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
                     "id": _item_id([node_path, "query", str(i), "search_param"]),
                     "severity": "medium",
                     "category": "query_search",
-                    "message": "Search / criteria style query parameter — verify no UAT-only or test campaign filters are hardcoded",
+                    "message": "Search/criteria param — check for hardcoded test filters",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": "value",
@@ -167,22 +257,20 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
                     "id": _item_id([node_path, "query", str(i), "static_criteria"]),
                     "severity": "medium",
                     "category": "query_criteria",
-                    "message": "Static Zoho-style :equals: criterion in query string (no expression) — confirm PROD values",
+                    "message": "Static Zoho :equals: filter (no n8n expression)",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": "value",
                 }
             )
 
-        if ("email_templates" in val or "pass2u" in val.lower() or "template" in val.lower()) and re.search(
-            r"/\d{10,}/", val
-        ):
+        if _external_saas_resource_id_hit(val):
             items.append(
                 {
                     "id": _item_id([node_path, "query", str(i), "saas_id"]),
                     "severity": "high",
                     "category": "saas_id",
-                    "message": "Possible hardcoded SaaS / template numeric ID in query parameter",
+                    "message": "Hardcoded external SaaS id",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": "value",
@@ -195,7 +283,7 @@ def _scan_query_parameters(node_path: str, params: dict[str, Any], items: list[d
                     "id": _item_id([node_path, "query", str(i), "phone"]),
                     "severity": "medium",
                     "category": "phone",
-                    "message": "Possible Hong Kong phone number in query parameter — confirm PROD whitelist",
+                    "message": "HK phone in query — verify PROD whitelist",
                     "json_path": val_path,
                     "snippet": val[:200],
                     "suggested_field": None,
@@ -232,13 +320,13 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
 
     name = data.get("name")
     if isinstance(name, str):
-        if re.search(r"\[UAT\]", name, re.I):
+        if _has_uat_env_label(name):
             items.append(
                 {
                     "id": _item_id(["root", "name", "uat"]),
                     "severity": "medium",
                     "category": "env_label",
-                    "message": "Workflow name still contains [UAT]",
+                    "message": "UAT tag in workflow name",
                     "json_path": "name",
                     "snippet": name,
                     "suggested_field": None,
@@ -263,13 +351,13 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
         for field in ("subject", "html", "fromEmail", "toEmail"):
             val = params.get(field)
             if isinstance(val, str):
-                if re.search(r"\[UAT\]", val, re.I):
+                if _has_uat_env_label(val):
                     items.append(
                         {
                             "id": _item_id([np, field, "uat"]),
                             "severity": "medium",
                             "category": "env_label",
-                            "message": f"Field '{field}' contains [UAT]",
+                            "message": f"UAT tag in {field}",
                             "json_path": f"{np}.parameters.{field}",
                             "snippet": val[:200],
                             "suggested_field": field,
@@ -281,7 +369,7 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                             "id": _item_id([np, field, "tbc"]),
                             "severity": "medium",
                             "category": "placeholder",
-                            "message": f"Field '{field}' contains TBC placeholder",
+                            "message": f"TBC in {field}",
                             "json_path": f"{np}.parameters.{field}",
                             "snippet": val[:200],
                             "suggested_field": field,
@@ -297,25 +385,38 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                             "id": _item_id([np, field, "uat_domain"]),
                             "severity": "high",
                             "category": "uat_domain",
-                            "message": "UAT domain cp-uat.emperorint.com still present",
+                            "message": "UAT domain still present",
                             "json_path": f"{np}.parameters.{field}",
                             "snippet": val[:200],
                             "suggested_field": field,
                         }
                     )
-                if field == "url" and ("email_templates" in val or "pass2u" in val.lower() or "template" in val.lower()):
-                    if re.search(r"/\d{10,}/", val):
-                        items.append(
-                            {
-                                "id": _item_id([np, field, "saas_id"]),
-                                "severity": "high",
-                                "category": "saas_id",
-                                "message": "Possible hardcoded SaaS / template numeric ID in URL",
-                                "json_path": f"{np}.parameters.{field}",
-                                "snippet": val[:200],
-                                "suggested_field": field,
-                            }
-                        )
+                if field in ("url", "jsonBody", "jsonOutput") and _external_saas_resource_id_hit(val):
+                    items.append(
+                        {
+                            "id": _item_id([np, field, "saas_id"]),
+                            "severity": "high",
+                            "category": "saas_id",
+                            "message": "Hardcoded external SaaS id",
+                            "json_path": f"{np}.parameters.{field}",
+                            "snippet": val[:200],
+                            "suggested_field": field,
+                        }
+                    )
+
+                # Zoho CRM /search?criteria=(...) in parameters.url — only when literals remain after stripping n8n {{ }}.
+                if field == "url" and _url_has_hardcoded_search_criteria(val):
+                    items.append(
+                        {
+                            "id": _item_id([np, field, "url_criteria"]),
+                            "severity": "medium",
+                            "category": "query_search",
+                            "message": "Hardcoded Zoho search criteria in URL",
+                            "json_path": f"{np}.parameters.{field}",
+                            "snippet": val[:200],
+                            "suggested_field": field,
+                        }
+                    )
 
         wid = params.get("workflowId")
         if isinstance(wid, dict):
@@ -327,7 +428,7 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                             "id": _item_id([np, "workflowId"]),
                             "severity": "high",
                             "category": "workflow_id",
-                            "message": "Sub-workflow id not covered by migration_mapping — add to workflowMappings.subWorkflows and set PROD id",
+                            "message": "Sub-workflow id not in migration_mapping",
                             "json_path": f"{np}.parameters.workflowId.value",
                             "snippet": inner_val,
                             "suggested_field": "workflowId.value",
@@ -341,7 +442,7 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                         "id": _item_id([np, jpath, "phone"]),
                         "severity": "medium",
                         "category": "phone",
-                        "message": "Possible Hong Kong phone number — confirm PROD whitelist",
+                        "message": "HK phone — verify PROD whitelist",
                         "json_path": jpath,
                         "snippet": text[:200],
                         "suggested_field": None,
@@ -359,7 +460,7 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                     "id": _item_id([np, "jsonOutput", "large"]),
                     "severity": "low",
                     "category": "mock_data",
-                    "message": "Large jsonOutput — may be mock / test payload",
+                    "message": "Large jsonOutput (likely mock data)",
                     "json_path": f"{np}.parameters.jsonOutput",
                     "snippet": jo[:120] + "…",
                     "suggested_field": "jsonOutput",
@@ -385,7 +486,7 @@ def scan_workflow(data: dict[str, Any], mapping: dict[str, Any]) -> list[dict[st
                     "id": _item_id([np, "bucket"]),
                     "severity": "medium",
                     "category": "storage",
-                    "message": "Bucket name may reference UAT — verify PROD bucket",
+                    "message": "Bucket name references UAT",
                     "json_path": f"{np}.parameters.bucketName",
                     "snippet": bn,
                     "suggested_field": "bucketName",

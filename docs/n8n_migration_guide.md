@@ -100,6 +100,7 @@ The repo’s `UAT/` directory holds **24 real n8n JSON exports** used as the gro
 ```json
 "url": "={{ $('Get API endpoints').item.json.zoho_api_domain }}/crm/v2/settings/email_templates/6638789000004030005"
 ```
+* **Also check**: `jsonBody` / `jsonOutput` strings that embed Zoho-style long numeric ids (e.g. `Benefit_Items` → `"id": "6638789000003866056"`) or Pass2U `.../models/{id}/...` when those ids are literals, not only `{{ ... }}` expressions.
 * **Action**: Identify and replace internal SaaS IDs (e.g., Zoho Template IDs, Zoho Benefit IDs, Pass2U Model IDs) with production equivalents.
 
 #### **Phone Whitelists & Logic Arrays**
@@ -112,7 +113,7 @@ The repo’s `UAT/` directory holds **24 real n8n JSON exports** used as the gro
 
 #### **Phone & Channel numbers**
 * **Location**: `nodes[].parameters.jsonBody` (e.g., `"channel_number"`) or `nodes[].parameters.jsonOutput` arrays.
-* **JSON Example** (from `[UAT] Template Message Webhook.json`):
+* **JSON Example** (from `[UAT] Daily CRM Task Online Scheduler.json`):
 ```json
 "jsonBody": "{ ... "channel_number": "85290556233" }"
 ```
@@ -120,7 +121,7 @@ The repo’s `UAT/` directory holds **24 real n8n JSON exports** used as the gro
 
 #### **Email Attributes & Content**
 * **Location**: `nodes[].parameters.subject`, `nodes[].parameters.fromEmail`, `nodes[].parameters.toEmail`, `nodes[].parameters.html`.
-* **JSON Example** (from `Customer Email Workflow Master.json`):
+* **JSON Example** (from `Zoho Campaign Workflow.json`):
 ```json
 "subject": "=[EIHL-CRM-UAT] Happy Birthday!",
 "html": "Format TBC..."
@@ -185,8 +186,8 @@ Before starting the conversion, ensure you have the following information from t
 
 After **Migrate** runs, use the in-app checklist and side-by-side diff in this order:
 
-1. **High — secrets & env leakage:** HTTP header parameters that look like Bearer tokens or API keys; any remaining `cp-uat.emperorint.com` in URLs, bodies, **or HTTP query parameter values**; unknown `workflowId.value` not present in `workflowMappings`; SaaS-looking numeric ids in URLs **or query strings** when still pointed at UAT resources.
-2. **Medium — labelling & routing:** `[UAT]` in workflow name or email fields; bucket names containing `uat`; HK phone numbers in conditions, `jsonBody`, **or query parameters**; **search / criteria style** `parameters.queryParameters` (Zoho COQL, filters, test campaign names); webhook paths if PROD must differ from UAT (only `-uat` path segments are rewritten automatically).
+1. **High — secrets & env leakage:** HTTP header parameters that look like Bearer tokens or API keys; any remaining `cp-uat.emperorint.com` in URLs, bodies, **or HTTP query parameter values**; unknown `workflowId.value` not present in `workflowMappings`; **external SaaS resource ids** (Zoho templates/benefits/modules, Pass2U models, etc.) in `parameters.url`, `jsonBody`, `jsonOutput`, **or query parameter values** when still UAT-only literals.
+2. **Medium — labelling & routing:** `[UAT]` in workflow name or email fields; bucket names containing `uat`; HK phone numbers in conditions, `jsonBody`, **or query parameters**; **search / criteria style** strings in `parameters.url` (e.g. `criteria=(...)`) **or** `parameters.queryParameters` (Zoho COQL, filters, test campaign names); webhook paths if PROD must differ from UAT (only `-uat` path segments are rewritten automatically).
 3. **Low — test payloads:** Oversized `jsonOutput` used as mock webhook payloads; sticky notes; disabled nodes you may want enabled on PROD.
 
 Re-scan after editing PROD JSON and before activating workflows on the PROD n8n instance.
